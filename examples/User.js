@@ -1,5 +1,5 @@
 /* User.js - Example subclass of BaseRIMObject */
-import BaseRIMObject from '../src/BaseRimObject'
+import BaseRIMObject from '../src/BaseRIMObject'
 
 // Simple example of a User domain object. For example purposes,
 // assume password is only provided to the server during user creation,
