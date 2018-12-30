@@ -1,0 +1,6 @@
+# Ignore local packages
+src/
+tests/
+examples/
+coverage/
+

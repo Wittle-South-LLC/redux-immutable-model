@@ -1,0 +1,84 @@
+{
+  "name": "redux-immutable-model",
+  "version": "0.1.0",
+  "description": "A redux-based library to support complex data models with minimal coding",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "babel src --out-dir dist",
+    "test": "NODE_ENV=test mocha --require @babel/register -- tests",
+    "cover": "NODE_ENV=test nyc _mocha --require @babel/register -- tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/wittlesouth/redux-immutable-model.git"
+  },
+  "keywords": [
+    "redux",
+    "immutable",
+    "fetch",
+    "inherit"
+  ],
+  "author": "Eric Wittle",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wittlesouth/redux-immutable-model/issues"
+  },
+  "homepage": "https://github.com/wittlesouth/redux-immutable-model#readme",
+  "dependencies": {
+    "immutable-inherit": "^0.1.0",
+    "isomorphic-fetch": "^2.2.1",
+    "redux": "^4.0.1",
+    "redux-immutable": "^4.0.0",
+    "redux-thunk": "^2.3.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@babel/node": "^7.2.2",
+    "@babel/plugin-proposal-class-properties": "^7.2.3",
+    "@babel/preset-env": "^7.2.3",
+    "babel-plugin-istanbul": "^5.1.0",
+    "chai": "^4.2.0",
+    "deep-diff": "^1.0.2",
+    "istanbul": "^0.4.5",
+    "mocha": "^5.2.0",
+    "nock": "^10.0.5",
+    "nyc": "^13.1.0"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ],
+    "plugins": [
+      "@babel/plugin-proposal-class-properties"
+    ],
+    "env": {
+      "test": {
+        "plugins": [
+          "istanbul"
+        ]
+      }
+    }
+  },
+  "nyc": {
+    "exclude": [
+      "**/test-*.js",
+      "tests/**",
+      "**/TestUtils.js",
+      "**/TestData.js"
+    ],
+    "require": [
+      "@babel/register"
+    ],
+    "extension": [
+      ".jsx",
+      ".js"
+    ],
+    "reporter": [
+      "lcov",
+      "text-summary"
+    ],
+    "sourceMap": false,
+    "instrument": false
+  }
+}
