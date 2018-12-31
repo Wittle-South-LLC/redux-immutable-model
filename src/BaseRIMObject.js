@@ -15,11 +15,17 @@ export default class BaseRIMObject extends ImmutableInherit {
   static _CreatedKey = "record_created"
   static _UpdatedKey = "record_updated"
 
+  // Most likely not updated by subclasses
+  static _NewID = 'newRIMObject'
+
   constructor(createFrom, dirtyVal = false, fetchingVal = false, newVal = false) {
     super(createFrom)
     this._dirty = dirtyVal
     this._fetching = fetchingVal
     this._new = newVal
+    if (this.getId() === undefined) {
+      this._data = this._data.set(this.constructor._IdentityKey, this.constructor._NewID)
+    }
   }
 
   // Convenience methods assuming relevant values are at the root of the
@@ -99,5 +105,10 @@ export default class BaseRIMObject extends ImmutableInherit {
       _fetching: this._fetching,
       _dirty: isDirty
     })
+  }
+
+  // This method should be overridden in subclasses
+  static getHydratePath () {
+    return ''
   }
 }

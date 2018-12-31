@@ -48,10 +48,10 @@ describe('BaseRIMObject Core Functions', () => {
     const testNew = testObj.setNew(testObj.isNew())
     chai.expect(testNew.hashCode()).to.equal(testObj.hashCode())
   })
-  it('Gets ID if present, undefined if not', () => {
+  it('Gets ID if present, newID if not', () => {
     chai.expect(testObj.getId()).to.equal(TEST_ID)
     const noIdObject = new BaseRIMObject()
-    chai.expect(noIdObject.getId()).to.equal(undefined)
+    chai.expect(noIdObject.getId()).to.equal(BaseRIMObject._NewID)
   })
   it('Gets created if present, undefined if not', () => {
     chai.expect(testObj.getCreated()).to.equal(TEST_CREATED)
