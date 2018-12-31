@@ -58,7 +58,7 @@ export default class User extends BaseRIMObject {
         result[User._PreferencesKey] = this.getPreferences().toJS()
         result[User._UsernameKey] = this.getUsername()
         break;
-      case verbs.SAVE_DELETE:
+      case verbs.COMMIT_DELETE:
       case verbs.READ:
         result = undefined
         break;

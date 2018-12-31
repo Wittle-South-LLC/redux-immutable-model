@@ -22,6 +22,7 @@ export default class BaseRIMService {
   constructor(rimClass) {
     this._state = this.getInitialState()
     this._objectClass = rimClass
+    this.reducer = this.reducer.bind(this)
   }
 
   static _ObjectMap = OBJECT_MAP
@@ -135,7 +136,7 @@ export default class BaseRIMService {
   }
 
   commitDelete (rimObj, nextPath = undefined) {
-    return execute(rimObj, 'DELETE', verbs.SAVE_DELETE, nextPath)
+    return execute(rimObj, 'DELETE', verbs.COMMIT_DELETE, nextPath)
   }
 
   search (nextPath = undefined) {

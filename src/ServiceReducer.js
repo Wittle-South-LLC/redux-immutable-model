@@ -3,18 +3,6 @@
 import verbs from "./ReduxVerbs"            // Defines the verb which can be reduced
 import status from "./ReduxAsyncStatus"     // Defines the possible status values for async calls
 
-// Primary export, a method lookup object
-const serviceReducers = {
-  [verbs.COMMIT_DELETE]: reduceCommitDelete,
-  [verbs.HYDRATE]: reduceHydrate,
-  [verbs.LOGIN]: reduceLogin,
-  [verbs.LOGOUT]: reduceLogout,
-  [verbs.READ]: reduceRead,
-  [verbs.SAVE_NEW]: reduceSaveNew,
-  [verbs.SAVE_UPDATE]: reduceSaveUpdate,
-  [verbs.SEARCH]: reduceSearch
-}
-
 const reduceCommitDelete = (service, action) => {
   switch(action.status) {
     case status.START: return sharedStartHandler(service, action)
@@ -194,6 +182,18 @@ const sharedHydrate = (service, action) => {
     }
   }
   return newState
+}
+
+// Primary export, a method lookup object
+const serviceReducers = {
+  [verbs.COMMIT_DELETE]: reduceCommitDelete,
+  [verbs.HYDRATE]: reduceHydrate,
+  [verbs.LOGIN]: reduceLogin,
+  [verbs.LOGOUT]: reduceLogout,
+  [verbs.READ]: reduceRead,
+  [verbs.SAVE_NEW]: reduceSaveNew,
+  [verbs.SAVE_UPDATE]: reduceSaveUpdate,
+  [verbs.SEARCH]: reduceSearch
 }
 
 export default serviceReducers
