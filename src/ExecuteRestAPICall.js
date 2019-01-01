@@ -2,24 +2,37 @@
 
 import fetch from 'isomorphic-fetch'
 import status from './ReduxAsyncStatus'
+import verbs from './ReduxVerbs'
 import config from './Configuration'
 
 export default function execute (rimObj, method, verb) {
   // If the object needs validation and validation fails, then
   // throw an exception
+  if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 1) {
+    console.log(`execute: ${verb} with ${method} on ${rimObj.constructor.name}`)
+  }
   if (rimObj.validateAction && !rimObj.validateAction(verb)) {
     throw new Error(VALIDATION_FAILED)
   }
   return (dispatch) => {
     // We're only going to do a fetch if there isn't one in flight
-    if (!rimObj.fetching) {
+    if (!rimObj.isFetching()) {
       let payload = {
-        apiUrl: rimObj.constructor._ApiBasePath,
+        apiUrl: verb in {[verbs.SAVE_NEW]: true, [verbs.SEARCH]: true, [verbs.SAVE_UPDATE]: true}
+          ? config.getFetchURL() + '/' + rimObj.constructor.getApiBasePath()
+          : config.getFetchURL() + '/' + 
+            rimObj.constructor.getApiBasePath() + '/' + 
+            rimObj.getId(),
         method,
         verb,
         rimObj
       }
-      payload['sendData'] = rimObj.getFetchPayload(action.verb)
+      if (method !== 'GET') {
+        payload['sendData'] = rimObj.getFetchPayload(verb)
+      }
+      if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
+        console.log('execute: dispatching fetchRIMObject with payload:', payload)
+      }
       return dispatch(fetchRIMObject(payload))
     } else {
       console.log('execute for ' + rimObj.constructor.name + 
@@ -48,12 +61,18 @@ function fetchRIMObject (payload) {
       : getApiHeaders(payload)
 
     // Update state indicating fetch has started
+    if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
+      console.log('fetchRIMObject: dispatching fetchStart with payload:', payload)
+    }
     dispatch(fetchStart(payload))
 
     // Start the fetch action
-    return fetch(config.getFetchURL(), requestHeaders)
+    return fetch(payload.apiUrl, requestHeaders)
       .then(response => {
 
+          if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
+            console.log('fetchRIMObject: response recieved:', response)
+          }
           // If function to pre-process responses exists, call it
           if (config.preProcessResponse) {
             response = config.preProcessResponse(response)
@@ -103,15 +122,16 @@ function getResponseJSON (httpVerb, response) {
 
 /* Redux action for all fetch starts */
 function fetchStart (payload) {
-  return { status: status.START, verb: payload.verb, payload }
+  return { type: 'async', status: status.START, verb: payload.verb, rimObj: payload.rimObj }
 }
 
 /* Redux action for all fetch errors */
 function fetchError (payload, error) {
   return {
+    type: 'async',
     status: status.ERROR,
     verb: payload.verb,
-    payload,
+    rimObj: payload.rimObj,
     error
   }
 }
@@ -119,9 +139,10 @@ function fetchError (payload, error) {
 /* Redux action for all fetch successes */
 function fetchSuccess (payload, receivedData) {
   return {
+    type: 'async',
     status: status.SUCCESS,
     verb: payload.verb,
-    payload,
+    rimObj: payload.rimObj,
     receivedData
   }
 }

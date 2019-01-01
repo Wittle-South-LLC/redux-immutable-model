@@ -3,7 +3,7 @@
 import verbs from "./ReduxVerbs"            // Defines the verb which can be reduced
 import status from "./ReduxAsyncStatus"     // Defines the possible status values for async calls
 
-const reduceCommitDelete = (service, action) => {
+const reduceCommitDelete = (state, service, action) => {
   switch(action.status) {
     case status.START: return sharedStartHandler(service, action)
     case status.ERROR: return sharedErrorHandler(service, action)
@@ -73,6 +73,9 @@ const reduceRead = (state, service, action) => {
 }
 
 const reduceSaveNew = (state, service, action) => {
+  if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
+    console.log('ServiceReducer.reduceSaveNew: received action =', action)
+  }
   switch(action.status) {
     case status.START: return sharedStartHandler(service, action)
     case status.ERROR: return sharedErrorHandler(service, action)
@@ -90,7 +93,7 @@ const reduceSaveNew = (state, service, action) => {
       // defined in the RIMObject child class to an ID assigned
       // by the server, so we need to delete the object at the old ID
       // and set the current object to the new ID
-      service.delete(action.rimObj)
+      service.deleteId(action.rimObj.getId())
       service.setEditingId(undefined)
       return service.setById(newObj)
     default: return sharedDefaultHandler(state, action)

@@ -96,6 +96,10 @@ export default class BaseRIMService {
       ? this._objectClass.getInitialState()
       : this.getInitialState(), action) {
 
+    if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
+      console.log('BaseRIMService.reducer action is', action)
+    }
+
     // First step, determine if any reducing actions are required
     // - If the action.rimObj class matches the service object
     //   class, we probably have work too
