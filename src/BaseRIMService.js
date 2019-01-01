@@ -1,5 +1,6 @@
 /* Base RIM Service - Basic service for managing RIM object collections */
 import { List, Map } from 'immutable'
+import config from './Configuration'
 import verbs from './ReduxVerbs'
 import status from './ReduxAsyncStatus'
 import serviceReducers from './ServiceReducer'
@@ -22,6 +23,8 @@ export default class BaseRIMService {
   constructor(rimClass) {
     this._state = this.getInitialState()
     this._objectClass = rimClass
+    this._defaultCollectionPath = rimClass.name + 's'
+    this._defaultApiPath = rimClass.name + 's'
     this.reducer = this.reducer.bind(this)
   }
 
@@ -40,6 +43,39 @@ export default class BaseRIMService {
 
   emptyState () {
     return this.setState(this.getInitialState())
+  }
+
+  getApiCollectionPath () {
+    return config.getCollectionApiPath
+      ? config.getCollectionApiPath(this._objectClass.name)
+      : this._defaultCollectionPath
+  }
+
+  getApiPath (verb, obj) {
+    let result = undefined
+    // If the application configuration supplied a method for customizing
+    // the API url, try it with this verb & object
+    if (config.getApiPath) {
+      result = config.getApiPath(verb, obj)
+    }
+    // If the customization yielded a URL, we're done, so return it
+    if (result) { return result }
+    result = '/' + this._defaultApiPath
+    switch (verb) {
+      case verbs.READ:
+      case verbs.DELETE:
+      case verbs.UPDATE:
+        result += '/' + obj.getId()
+        break
+      case verbs.SEARCH:
+        // In this case, obj is the text to search
+        result += '?search_text=' + obj
+    }
+    /* istanbul ignore if - This is debug code only and should be stripped in production */
+    if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 1) {
+      console.log(`BaseRIMService: getApiPath() returning ${result} for ${verb} on ${obj.getId ? obj.getId() : obj}`)
+    }
+    return result
   }
 
   getById (id) {
@@ -67,7 +103,7 @@ export default class BaseRIMService {
       [BaseRIMService._EditingId]: undefined,
       [BaseRIMService._RevertTo]: undefined,
       [BaseRIMService._SearchData]: Map({}),
-      [BaseRIMService._SearchResult]: List([])
+      [BaseRIMService._SearchResults]: List([])
     })
   }
 
@@ -96,6 +132,7 @@ export default class BaseRIMService {
       ? this._objectClass.getInitialState()
       : this.getInitialState(), action) {
 
+    /* istanbul ignore if - development only debug functionality */
     if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
       console.log('BaseRIMService.reducer action is', action)
     }
@@ -127,25 +164,37 @@ export default class BaseRIMService {
     return this._state.hasIn([OBJECT_MAP, this._objectClass._NewID])
   }
 
+  isFetching (obj) {
+    if (typeof obj === "string") {
+      // This use case is for the search action, which does not require a RIMObject
+      // If a search is in flight from this service, the SEARCH_DATA map will have
+      // a fetching property
+      return this._state.hasIn([SEARCH_DATA, 'fetching'])
+    }
+    else if (obj.isFetching) { return obj.isFetching() }
+    else if (process.env.NODE_ENV !== 'production') {
+      throw new Error(`BaseRIMService: ${this._objectClass.name} isFetching(): invalid argument: `, obj)
+    }
+  }
+
   read (rimObj, nextPath = undefined) {
-    return execute(rimObj, 'GET', verbs.READ, nextPath)
+    return execute(this, verbs.READ, 'GET', rimObj, nextPath)
   }
 
   saveNew (rimObj, nextPath = undefined) {
-    return execute(rimObj, 'POST', verbs.SAVE_NEW, nextPath)
+    return execute(this, verbs.SAVE_NEW, 'POST', rimObj, nextPath)
   }
 
   saveUpdate (rimObj, nextPath = undefined) {
-    return execute(rimObj, 'PUT', verbs.SAVE_UPDATE, nextPath)
+    return execute(this, verbs.SAVE_UPDATE, 'PUT', rimObj, nextPath)
   }
 
   commitDelete (rimObj, nextPath = undefined) {
-    return execute(rimObj, 'DELETE', verbs.COMMIT_DELETE, nextPath)
+    return execute(this, verbs.DELETE, 'DELETE', rimObj, nextPath)
   }
 
-  search (nextPath = undefined) {
-    // NEEDS FIXING
-    return execute(this._state.get(this._searchData), nextPath)
+  search (searchText, nextPath = undefined) {
+    return execute(this, verbs.SEARCH, 'GET', searchText, nextPath)
   }
 
   setById (rimObj) {

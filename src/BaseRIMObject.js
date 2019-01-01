@@ -106,14 +106,4 @@ export default class BaseRIMObject extends ImmutableInherit {
       _dirty: isDirty
     })
   }
-
-  // This method should be overridden in subclasses
-  static getHydratePath () {
-    return ''
-  }
-
-  // This method should be overridden in subclasses
-  static getApiBasePath () {
-    return 'test'
-  }
 }

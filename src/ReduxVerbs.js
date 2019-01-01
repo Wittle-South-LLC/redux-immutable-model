@@ -7,7 +7,7 @@ const verbs = {
   LOGIN:            'LOGIN',            // Authenticate user
   LOGOUT:           'LOGOUT',           // Clear authentication
   READ:             'READ',             // Read object
-  COMMIT_DELETE:    'COMMIT_DELETE',    // Execute delete
+  DELETE:           'DELETE',           // Execute delete
   SAVE_NEW:         'SAVE_NEW',         // Create new object
   SAVE_UPDATE:      'SAVE_UPDATE',      // Update existing object
   SEARCH:           'SEARCH'            // Search for objects

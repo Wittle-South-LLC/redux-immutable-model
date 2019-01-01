@@ -2,13 +2,15 @@
 
 import { before, beforeEach, describe, it } from 'mocha'
 import chai from 'chai'
-import { Map } from 'immutable'
+import { fromJS, Map } from 'immutable'
 import nock from 'nock'
 import thunkMiddleware from 'redux-thunk'
 import { createStore, applyMiddleware } from 'redux'
 import { testAsync } from './TestUtils'
+import config from '../src/Configuration'
 import verbs from '../src/ReduxVerbs'
 import status from '../src/ReduxAsyncStatus'
+import serviceReducers from '../src/ServiceReducer'
 import BaseRIMObject from '../src/BaseRIMObject'
 import BaseRIMService from '../src/BaseRIMService'
 
@@ -139,7 +141,65 @@ describe('BaseRIMService reducer support functions', () => {
   })
 })
 
-describe('BaseRIMService action methods', () => {
+describe('BaseRIMService code coverage tests', () => {
+  beforeEach(() => {
+    testService.emptyState()
+    testService.setById(testObj)
+  })
+  it('Invalid status to reducer throws exception', () => {
+    const reduceRead = serviceReducers[verbs.READ]
+    chai.expect(() => reduceRead(testService.getState(), testService, {status: 'Junk', verb: verbs.READ, rimObj: testObj})).to.throw(Error)
+  })
+  it('reduceHydrate clears fetching if result is error', () => {
+    const reduceHydrate = serviceReducers[verbs.HYDRATE]
+    testService.setById(testObj.setFetching(true))
+    chai.expect(testService.getById(testObj.getId()).isFetching()).to.be.true
+    const errorEvent = { verb: verbs.HYDRATE, status: status.ERROR, rimObj: testObj, error: new Error("Test") }
+    reduceHydrate(testService.getState(), testService, errorEvent)
+    chai.expect(testService.getById(testObj.getId()).isFetching()).to.be.false
+  })
+})
+
+describe('Direct reducer tests', () => {
+  beforeEach(() => {
+    testService.emptyState()
+    testService.setById(testObj)
+  })
+  it('reduceHydrate() updates state correctly', () => {
+    const reduceHydrate = serviceReducers[verbs.HYDRATE]
+    const startEvent = { verb: verbs.HYDRATE, status: status.START, rimObj: testObj }
+    reduceHydrate(testService.getState(), testService, startEvent)
+    chai.expect(testService.getById(testObj.getId()).isFetching()).to.be.true
+    const receivedData = {
+      BaseRIMObjects: [
+        { ID: 'Object1', record_created: 'Date1'},
+        { ID: 'Object2', record_created: 'Date2'},
+        { ID: 'Object3', record_created: 'Date3'}
+      ]
+    }
+    const successEvent = { verb: verbs.HYDRATE, status: status.SUCCESS, rimObj: testObj, receivedData }
+    reduceHydrate(testService.getState(), testService, successEvent)
+    chai.expect(testService.getById('Object1').getCreated()).to.equal('Date1')
+  })
+  it('reduceLogin() updates state correctly', () => {
+    const reduceLogin = serviceReducers[verbs.LOGIN]
+    const startEvent = { verb: verbs.LOGIN, status: status.START, rimObj: testObj }
+    reduceLogin(testService.getState(), testService, startEvent)
+    chai.expect(testService.getById(testObj.getId()).isFetching()).to.be.true
+    const receivedData = {
+      BaseRIMObjects: [
+        { ID: 'Object1', record_created: 'Date1'},
+        { ID: 'Object2', record_created: 'Date2'},
+        { ID: 'Object3', record_created: 'Date3'}
+      ]
+    }
+    const successEvent = { verb: verbs.LOGIN, status: status.SUCCESS, rimObj: testObj, receivedData }
+    reduceLogin(testService.getState(), testService, successEvent)
+    chai.expect(testService.getById('Object1').getCreated()).to.equal('Date1')
+  })
+})
+
+describe('BaseRIMService action methods - true async tests', () => {
   beforeEach(() => {
     testService.emptyState()
   })
@@ -158,7 +218,7 @@ describe('BaseRIMService action methods', () => {
     testService.setState(startState)
     // Create the store so we test the entire dispatch chain
     let store = createStore(testService.reducer, startState, applyMiddleware(thunkMiddleware))
-    nock(process.env.API_URL).get('/test/' + startObj.getId()).reply(200, {
+    nock(config.getFetchURL()).get(testService.getApiPath(verbs.READ, startObj)).reply(200, {
       ID: 'TestID1',
       record_created: '2019-01-01T00:00:00.000Z'
     })
@@ -182,16 +242,20 @@ describe('BaseRIMService action methods', () => {
     chai.expect(testService.getById(BaseRIMObject._NewID)).to.equal(startObj)
     // Our expected result is an updated object with a server-assigned ID
     const objId = 'RimObjectSaveNew1'
-    const resultObj = startObj.updateField(BaseRIMObject._IdentityKey, objId)
+    const resultObj = startObj.updateField(BaseRIMObject._IdentityKey, objId).setNew(false)
+    chai.expect(resultObj.getId()).to.equal(objId)
+    chai.expect(resultObj.isNew()).to.be.false
     // Result state should not have the 'new' object
     testService.deleteId(startObj.getId())
+    chai.expect(testService.getById(startObj.getId())).to.be.undefined
     // Result state should have the object with the server assigned ID
     const resultState = testService.setById(resultObj)
+    chai.expect(testService.getById(resultObj.getId())).to.eql(resultObj)
     // Now reset the service state to start conditions
     testService.setState(startState)
     // Expected API response for a successful SaveNew is a status 200
     // with a JSON object holding the server-assigned ID
-    nock(process.env.API_URL).post('/test').reply(200, { ID: objId })
+    nock(config.getFetchURL()).post(testService.getApiPath(verbs.SAVE_NEW, startObj)).reply(200, { ID: objId })
     // Now execute the async call, validating that the start
     // and end states match what we expect
     testAsync(store, startState, resultState, done)
@@ -215,11 +279,11 @@ describe('BaseRIMService action methods', () => {
     // Reset state of service to start
     testService.setState(startState)
     // Expected API response for a successful SaveUpdate is a status 200
-    nock(process.env.API_URL).put('/test/' + startObj.getId()).reply(200, { result: "OK" } )
+    nock(config.getFetchURL()).put(testService.getApiPath(verbs.SAVE_UPDATE, startObj)).reply(200, { result: "OK" } )
     // Now execute the async call, validating that the start
     // and end states match what we expect
     testAsync(store, startState, resultState, done)
-    store.dispatch(testService.saveNew(startObj))
+    store.dispatch(testService.saveUpdate(startObj))
   })
   it('Successful commitDelete(obj) correctly updates state', (done) => {
     // We need an object that is to delete
@@ -238,11 +302,28 @@ describe('BaseRIMService action methods', () => {
     // Reset state of service to start
     testService.setState(startState)
     // Expected API response for a successful commitDelete is a status 204
-    nock(process.env.API_URL).delete('/test/' + startObj.getId()).reply(204)
+    nock(config.getFetchURL()).delete(testService.getApiPath(verbs.DELETE, startObj)).reply(204)
     // Now execute the async call, validating that the start
     // and end states match what we expect
     testAsync(store, startState, resultState, done)
     store.dispatch(testService.commitDelete(startObj))
+  })
+  it('Successful search() correctly updates state', (done) => {
+    // We need a start state
+    const startState = testService.setById(testObj)
+    // We need a store to fully test the dispatch features
+    let store = createStore(testService.reducer, startState, applyMiddleware(thunkMiddleware))
+    // We need to define what search data will return
+    const searchResponse = [
+      {ID: 'SearchItem1', record_created: 'Created1', record_updated: 'Updated1'},
+      {ID: 'SearchItem2', record_created: 'Created1', record_updated: 'Updated1'},
+      {ID: 'SearchItem3', record_created: 'Created1', record_updated: 'Updated1'}
+    ]
+    // Need a result state with these objects where they are supposed to be
+    const resultState = startState.set(BaseRIMService._SearchResults, fromJS(searchResponse))
+    nock(config.getFetchURL()).get(testService.getApiPath(verbs.SEARCH, "Nothing")).reply(200,searchResponse)
+    testAsync(store, startState, resultState, done)
+    store.dispatch(testService.search("Nothing"))
   })
 })
 

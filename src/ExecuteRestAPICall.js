@@ -2,27 +2,24 @@
 
 import fetch from 'isomorphic-fetch'
 import status from './ReduxAsyncStatus'
-import verbs from './ReduxVerbs'
 import config from './Configuration'
 
-export default function execute (rimObj, method, verb) {
+export default function execute (service, verb, method, rimObj, nextPath = undefined) {
   // If the object needs validation and validation fails, then
   // throw an exception
   if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 1) {
     console.log(`execute: ${verb} with ${method} on ${rimObj.constructor.name}`)
   }
+  // if item is a RIMObject and has a validateAction method, call it
+  // for this verb to see if the object is in a state to proceed
   if (rimObj.validateAction && !rimObj.validateAction(verb)) {
     throw new Error(VALIDATION_FAILED)
   }
   return (dispatch) => {
     // We're only going to do a fetch if there isn't one in flight
-    if (!rimObj.isFetching()) {
+    if (!service.isFetching(rimObj)) {
       let payload = {
-        apiUrl: verb in {[verbs.SAVE_NEW]: true, [verbs.SEARCH]: true, [verbs.SAVE_UPDATE]: true}
-          ? config.getFetchURL() + '/' + rimObj.constructor.getApiBasePath()
-          : config.getFetchURL() + '/' + 
-            rimObj.constructor.getApiBasePath() + '/' + 
-            rimObj.getId(),
+        apiUrl: config.getFetchURL() + service.getApiPath(verb, rimObj),
         method,
         verb,
         rimObj
@@ -30,6 +27,7 @@ export default function execute (rimObj, method, verb) {
       if (method !== 'GET') {
         payload['sendData'] = rimObj.getFetchPayload(verb)
       }
+      /* istanbul ignore if - development only functionality */
       if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
         console.log('execute: dispatching fetchRIMObject with payload:', payload)
       }
@@ -61,6 +59,7 @@ function fetchRIMObject (payload) {
       : getApiHeaders(payload)
 
     // Update state indicating fetch has started
+    /* istanbul ignore if - development only functionality */
     if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
       console.log('fetchRIMObject: dispatching fetchStart with payload:', payload)
     }
@@ -70,6 +69,7 @@ function fetchRIMObject (payload) {
     return fetch(payload.apiUrl, requestHeaders)
       .then(response => {
 
+          /* istanbul ignore if - development only functionality */
           if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
             console.log('fetchRIMObject: response recieved:', response)
           }
