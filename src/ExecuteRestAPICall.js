@@ -3,10 +3,12 @@
 import fetch from 'isomorphic-fetch'
 import status from './ReduxAsyncStatus'
 import config from './Configuration'
+import verbs from './ReduxVerbs';
 
 export default function execute (service, verb, method, rimObj, nextPath = undefined) {
   // If the object needs validation and validation fails, then
   // throw an exception
+  /* istanbul ignore if - this is development debugging code */
   if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 1) {
     console.log(`execute: ${verb} with ${method} on ${rimObj.constructor.name}`)
   }
@@ -17,6 +19,7 @@ export default function execute (service, verb, method, rimObj, nextPath = undef
   }
   return (dispatch) => {
     // We're only going to do a fetch if there isn't one in flight
+    /* istanbul ignore else - Code is unreachable by design */
     if (!service.isFetching(rimObj)) {
       let payload = {
         apiUrl: config.getFetchURL() + service.getApiPath(verb, rimObj),

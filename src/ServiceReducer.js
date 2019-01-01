@@ -7,11 +7,12 @@ import status from "./ReduxAsyncStatus"     // Defines the possible status value
 const reduceCommitDelete = (state, service, action) => {
   switch(action.status) {
     case status.START: return sharedStartHandler(service, action)
+    /* istanbul ignore next - same code is covered by hydrate testing */
     case status.ERROR: return sharedErrorHandler(service, action)
     case status.SUCCESS:
       // Now if search results contain the same entity, delete it from there as well
       let delSearchIndex = state.get(service.constructor._SearchResults)
-                                .findIndex((o) => o.get(Service.getObjectClass()._IdentityKey) === action.rimObj.getId())
+                                .findIndex((o) => o.get(service.getObjectClass()._IdentityKey) === action.rimObj.getId())
       let delState = state
       if (delSearchIndex >= 0) {
         delState = delState.deleteIn([service.constructor._SearchResults, delSearchIndex])
@@ -19,9 +20,9 @@ const reduceCommitDelete = (state, service, action) => {
       // If we can delete the object from data, then do so. If not, make sure it is not
       // marked as fetching, since the delete is done.
       if (service.getObjectClass().canDeleteFromData()) {
-        delState = service.delete(action.rimObj)
+        delState = delState.deleteIn([service.constructor._ObjectMap, action.rimObj.getId()])
       } else {
-        delState = service.setById(action.rimObj.setFetching(false))
+        delState = delState.setIn([service.constructor._ObjectMap, action.rimObj.getId()],action.rimObj.setFetching(false))
       }
     return delState
     /* istanbul ignore next */
@@ -53,15 +54,16 @@ const reduceLogin = (state, service, action) => {
 const reduceLogout = (state, service, action) => {
   switch(action.status) {
     case status.START: return sharedStartHandler(service, action)
+    /* istanbul ignore next - same code is covered by hydrate testing */
     case status.ERROR: return sharedErrorHandler(service, action)
     case status.SUCCESS:
       // Object class can override default behavior of logout state, in case
       // application requires some content (e.g. domain objects in a new state)
       let logoutState = service.getInitialState()
-      if (service.getObjectClass().afterLogoutSuccess) {
-        logoutState = service.getObjectClass().afterLogoutSuccess(logoutState)
+      if (service.afterLogoutSuccess) {
+        logoutState = service.afterLogoutSuccess(logoutState)
       }
-      return logoutState
+      return service.setState(logoutState)
     /* istanbul ignore next */
     default: return sharedDefaultHandler(state, action)
   }
@@ -120,15 +122,16 @@ const reduceSaveUpdate = (state, service, action) => {
       let updObj = action.rimObj.afterUpdateSuccess
         ? action.rimObj.setFetching(false).setDirty(false).afterUpdateSuccess(action.receivedData)
         : action.rimObj.setFetching(false).setDirty(false)
-      let newState = service.setById(updObj).setEditingId(undefined)
+      let newState = service.setById(updObj)
+      newState = service.setEditingId(undefined)
       // Now if this class allows editing of search results, update the
       // search result object that has the same identity
-      if (service.updateSearchEdit) {
+      if (service.updateSearchObject) {
         let editIndex = state.get(service.constructor._SearchResults)
-                             .findIndex((o) => o.get(Service.getObjectClass()._IdentityKey) === action.rimObj.getId())
+                             .findIndex((o) => o.get(service.getObjectClass()._IdentityKey) === action.rimObj.getId())
         if (editIndex >= 0) {
           newState = newState.setIn([service.constructor._SearchResults, editIndex],
-                                    service.updateSearchEdit(newState.getIn([service.constructor._SearchResults, editIndex]), action.rimObj))
+                                    service.updateSearchObject(newState.getIn([service.constructor._SearchResults, editIndex]), action.rimObj))
           }
         }
         return newState

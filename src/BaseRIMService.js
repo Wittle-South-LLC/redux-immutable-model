@@ -1,5 +1,5 @@
 /* Base RIM Service - Basic service for managing RIM object collections */
-import { List, Map } from 'immutable'
+import { List, Map, fromJS } from 'immutable'
 import config from './Configuration'
 import verbs from './ReduxVerbs'
 import status from './ReduxAsyncStatus'
@@ -34,6 +34,11 @@ export default class BaseRIMService {
   static _RevertTo = REVERT_TO
   static _SearchData = SEARCH_DATA
   static _SearchResults = SEARCH_RESULTS
+
+  // Override to customize behavior after logout
+  afterLogoutSuccess (state) {
+    return state
+  }
 
   deleteId (id) {
     return this._state.get(CURRENT_ID) === id
@@ -144,6 +149,7 @@ export default class BaseRIMService {
     //   Logout, or Hydrate then we likely have work
     if (!action.rimObj || 
         (action.rimObj.constructor !== this.getObjectClass() &&
+         typeof action.rimObj !== 'string' &&
         action.status !== status.SUCCESS &&
         !(action.verb in globalVerbs))) {
       return state
@@ -172,6 +178,7 @@ export default class BaseRIMService {
       return this._state.hasIn([SEARCH_DATA, 'fetching'])
     }
     else if (obj.isFetching) { return obj.isFetching() }
+    /* istanbul ignore next - This is debug code only and should be stripped in production */
     else if (process.env.NODE_ENV !== 'production') {
       throw new Error(`BaseRIMService: ${this._objectClass.name} isFetching(): invalid argument: `, obj)
     }
@@ -225,5 +232,18 @@ export default class BaseRIMService {
   setState (state) {
     this._state = state
     return state
+  }
+
+  // The object here is to update any properties in the searchObject
+  // that were changed in the rimObject during an update to rimObject
+  updateSearchObject(searchObject, rimObject) {
+    const jsSearchObject = searchObject.toJS()
+    const jsRIMObject = rimObject.getData().toJS()
+    for (var prop in jsSearchObject) {
+      if (jsSearchObject.hasOwnProperty(prop) && prop in jsRIMObject) {
+        jsSearchObject[prop] = jsRIMObject[prop]
+      }
+    }
+    return fromJS(jsRIMObject)
   }
 }

@@ -13,6 +13,8 @@ export function isd (from, to, msg = undefined) {
       if (d) {
         if (msg) { console.log(msg) }
         console.log(d)
+//        console.log('from: ', JSON.stringify(from.toJS(), null, 2))
+//        console.log('to:   ', JSON.stringify(to.toJS(), null, 2))
       } else {
         console.log('is says objects are different, diff feels otherwise')
         console.log('from: ', from.toJS())

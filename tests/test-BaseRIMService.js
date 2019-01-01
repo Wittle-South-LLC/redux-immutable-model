@@ -41,6 +41,9 @@ describe('BaseRIMService collection management functions', () => {
   it('getObjectMap() - New instance returns empty object list', () => {
     chai.expect(testService.getObjectMap().equals(Map({}))).to.be.true
   })
+  it('getSearchResults() gets search results', () => {
+    chai.expect(testService.getSearchResults()).to.eql([])
+  })
   it('Sets an object by ID and retrieves it by ID', () => {
     testService.setById(testObj)
     chai.expect(testService.getById(testObj.getId())).to.equal(testObj)
@@ -158,6 +161,18 @@ describe('BaseRIMService code coverage tests', () => {
     reduceHydrate(testService.getState(), testService, errorEvent)
     chai.expect(testService.getById(testObj.getId()).isFetching()).to.be.false
   })
+  it('Returns custom collection API path if config override is set', () => {
+    const configGetCollectionApiPath = config.getCollectionApiPath
+    config.getCollectionApiPath = () => { return "test"}
+    chai.expect(testService.getApiCollectionPath()).to.equal("test")
+    config.getCollectionApiPath = configGetCollectionApiPath
+  })
+  it('Returns custom API path if config override is set', () => {
+    const configGetApiPath = config.getApiPath
+    config.getApiPath = (verb, obj) => { return "test"}
+    chai.expect(testService.getApiPath(verbs.READ, testObj)).to.equal("test")
+    config.getApiPath = configGetApiPath
+  })
 })
 
 describe('Direct reducer tests', () => {
@@ -196,6 +211,24 @@ describe('Direct reducer tests', () => {
     const successEvent = { verb: verbs.LOGIN, status: status.SUCCESS, rimObj: testObj, receivedData }
     reduceLogin(testService.getState(), testService, successEvent)
     chai.expect(testService.getById('Object1').getCreated()).to.equal('Date1')
+  })
+  it('reduceLogout() updates state correctly', () => {
+    const reduceLogout = serviceReducers[verbs.LOGOUT]
+    const startEvent = { verb: verbs.LOGOUT, status: status.START, rimObj: testObj }
+    reduceLogout(testService.getState(), testService, startEvent)
+    chai.expect(testService.getById(testObj.getId()).isFetching()).to.be.true
+    const receivedData = {}
+    const successEvent = { verb: verbs.LOGOUT, status: status.SUCCESS, rimObj: testObj, receivedData }
+    reduceLogout(testService.getState(), testService, successEvent)
+    chai.expect(testService.getObjectMap().equals(Map({}))).to.be.true
+  })
+  it('search() error correctly updates state', () => {
+    // We need a start state
+    const reduceSearch = serviceReducers[verbs.SEARCH]
+    const startState = testService.getState().setIn([BaseRIMService._SearchData, 'fetching'], true)
+    const errorEvent = { verb: verbs.SEARCH, status: status.ERROR, rimObj: "Nothing" }
+    const finishState = reduceSearch(startState, testService, errorEvent)
+    chai.expect(finishState.hasIn([BaseRIMService._SearchData, 'fetching'])).to.be.false
   })
 })
 
@@ -271,11 +304,22 @@ describe('BaseRIMService action methods - true async tests', () => {
     chai.expect(startObj.getId()).to.equal('ExistingID3')
     chai.expect(startObj.isDirty()).to.be.true
     // Put the dirty object in the store
-    const startState = testService.setById(startObj)
+    let startState = testService.setById(startObj)
+    // Ensure the same ID is in SEARCH_RESULTS for code coverage
+    const searchResults = [
+      {ID: 'ExistingID3', record_created: 'Value5', record_updated: 'Value6'},
+      {ID: 'SearchItem2', record_created: 'Created1', record_updated: 'Updated1'},
+      {ID: 'SearchItem3', record_created: 'Created1', record_updated: 'Updated1'}
+    ]
+    startState = startState.set(BaseRIMService._SearchResults, fromJS(searchResults))
+    // Reset state of service to start
+    testService.setState(startState)
     // We need a store to fully test the dispatch features
     let store = createStore(testService.reducer, startState, applyMiddleware(thunkMiddleware))
     // Result object is simply the start object, not dirty
-    const resultState = testService.setById(startObj.setDirty(false))
+    let resultState = testService.setById(startObj.setDirty(false))
+    resultState = resultState.setIn([BaseRIMService._SearchResults, 0, 'record_created'], 'Value3')
+                             .setIn([BaseRIMService._SearchResults, 0, 'record_updated'], 'Value4')
     // Reset state of service to start
     testService.setState(startState)
     // Expected API response for a successful SaveUpdate is a status 200
@@ -294,11 +338,20 @@ describe('BaseRIMService action methods - true async tests', () => {
     }, false, false, false)
     chai.expect(startObj.getId()).to.equal('DeleteMe')
     // Put the object in the store
-    const startState = testService.setById(startObj)
+    let startState = testService.setById(startObj)
+    // Ensure the same ID is in SEARCH_RESULTS for code coverage
+    const searchResults = [
+      {ID: 'DeleteMe', record_created: 'Value5', record_updated: 'Value6'},
+      {ID: 'SearchItem2', record_created: 'Created1', record_updated: 'Updated1'},
+      {ID: 'SearchItem3', record_created: 'Created1', record_updated: 'Updated1'}
+    ]
+    startState = startState.set(BaseRIMService._SearchResults, fromJS(searchResults))
+    // Reset state of service to start
+    testService.setState(startState)
     // We need a store to fully test the dispatch features
     let store = createStore(testService.reducer, startState, applyMiddleware(thunkMiddleware))
     // Result object is the start state without the object to be deleted
-    const resultState = testService.deleteId(startObj.setDirty(false))
+    const resultState = testService.deleteId(startObj.getId()).deleteIn([BaseRIMService._SearchResults, 0])
     // Reset state of service to start
     testService.setState(startState)
     // Expected API response for a successful commitDelete is a status 204
@@ -310,7 +363,8 @@ describe('BaseRIMService action methods - true async tests', () => {
   })
   it('Successful search() correctly updates state', (done) => {
     // We need a start state
-    const startState = testService.setById(testObj)
+    let startState = testService.setById(testObj)
+    startState = startState.setIn([BaseRIMService._SearchData, 'fetching'], true)
     // We need a store to fully test the dispatch features
     let store = createStore(testService.reducer, startState, applyMiddleware(thunkMiddleware))
     // We need to define what search data will return
@@ -320,7 +374,8 @@ describe('BaseRIMService action methods - true async tests', () => {
       {ID: 'SearchItem3', record_created: 'Created1', record_updated: 'Updated1'}
     ]
     // Need a result state with these objects where they are supposed to be
-    const resultState = startState.set(BaseRIMService._SearchResults, fromJS(searchResponse))
+    let resultState = startState.set(BaseRIMService._SearchResults, fromJS(searchResponse))
+    resultState = resultState.deleteIn([BaseRIMService._SearchData, 'fetching'])
     nock(config.getFetchURL()).get(testService.getApiPath(verbs.SEARCH, "Nothing")).reply(200,searchResponse)
     testAsync(store, startState, resultState, done)
     store.dispatch(testService.search("Nothing"))
