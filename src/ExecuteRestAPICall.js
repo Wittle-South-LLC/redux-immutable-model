@@ -3,7 +3,6 @@
 import fetch from 'isomorphic-fetch'
 import status from './ReduxAsyncStatus'
 import config from './Configuration'
-import verbs from './ReduxVerbs';
 
 export default function execute (service, verb, method, rimObj, nextPath = undefined) {
   // If the object needs validation and validation fails, then
@@ -25,6 +24,7 @@ export default function execute (service, verb, method, rimObj, nextPath = undef
         apiUrl: config.getFetchURL() + service.getApiPath(verb, rimObj),
         method,
         verb,
+        nextPath,
         rimObj
       }
       if (method !== 'GET') {
@@ -135,6 +135,7 @@ function fetchError (payload, error) {
     status: status.ERROR,
     verb: payload.verb,
     rimObj: payload.rimObj,
+    nextPath: payload.nextPath,
     error
   }
 }
@@ -146,6 +147,7 @@ function fetchSuccess (payload, receivedData) {
     status: status.SUCCESS,
     verb: payload.verb,
     rimObj: payload.rimObj,
+    nextPath: payload.nextPath,
     receivedData
   }
 }
