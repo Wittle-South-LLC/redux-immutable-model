@@ -4,6 +4,16 @@ import fetch from 'isomorphic-fetch'
 import status from './ReduxAsyncStatus'
 import config from './Configuration'
 
+// TODO: Ensure that pre-processing options can be used for Flask-JWT-Extended
+//       - I expect it can, because I should be able to get cookies in response
+//         post-processing, and set the CSRF header in header processing
+// TODO: Ensure that post-processing can handle react-intl error customization
+//       - I expect it can, because I should be able to do it in pre-process
+//         response, with thrown errors if necessary
+// TODO: Ensure that next path for react-router can work
+//       - I expect this can be part of the standard payload, but I'm honestly
+//         not entirely sure how this will need to work
+
 export default function execute (service, verb, method, rimObj, nextPath = undefined) {
   // If the object needs validation and validation fails, then
   // throw an exception
@@ -34,7 +44,38 @@ export default function execute (service, verb, method, rimObj, nextPath = undef
       if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
         console.log('execute: dispatching fetchRIMObject with payload:', payload)
       }
-      return dispatch(fetchRIMObject(payload))
+
+      // If function to customize headers exists, call it on the standard headers 
+      const requestHeaders = config.applyHeaders
+        ? config.applyHeaders(getApiHeaders(payload))
+        : getApiHeaders(payload)
+
+      // Update state indicating fetch has started
+      /* istanbul ignore if - development only functionality */
+      if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
+        console.log('fetchRIMObject: dispatching fetchStart with payload:', payload)
+      }
+      dispatch(fetchStart(payload))
+
+      // Start the fetch action
+      return fetch(payload.apiUrl, requestHeaders)
+        .then(response => {
+
+            /* istanbul ignore if - development only functionality */
+            if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
+              console.log('fetchRIMObject: response recieved:', response)
+            }
+            // If function to pre-process responses exists, call it
+            if (config.preProcessResponse) {
+              response = config.preProcessResponse(response)
+            }
+
+            // Call function that will get the response JSON or
+            // throw an exception if the response is not OK
+            return getResponseJSON(payload.method, response)
+        })
+        .then(json => dispatch(fetchSuccess(payload, json)))
+        .catch(error => dispatch(fetchError(payload, error)))
     } else {
       console.log('execute for ' + rimObj.constructor.name + 
                   ' called with action ' +  action.verb + ' while fetching')
@@ -43,52 +84,6 @@ export default function execute (service, verb, method, rimObj, nextPath = undef
   }
 }
 
-// TODO: Ensure that pre-processing options can be used for Flask-JWT-Extended
-//       - I expect it can, because I should be able to get cookies in response
-//         post-processing, and set the CSRF header in header processing
-// TODO: Ensure that post-processing can handle react-intl error customization
-//       - I expect it can, because I should be able to do it in pre-process
-//         response, with thrown errors if necessary
-// TODO: Ensure that next path for react-router can work
-//       - I expect this can be part of the standard payload, but I'm honestly
-//         not entirely sure how this will need to work
-
-// This function is assumed to be called as a Redux action
-function fetchRIMObject (payload) {
-  return (dispatch) => {
-    // If function to customize headers exists, call it on the standard headers 
-    const requestHeaders = config.applyHeaders
-      ? config.applyHeaders(getApiHeaders(payload))
-      : getApiHeaders(payload)
-
-    // Update state indicating fetch has started
-    /* istanbul ignore if - development only functionality */
-    if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
-      console.log('fetchRIMObject: dispatching fetchStart with payload:', payload)
-    }
-    dispatch(fetchStart(payload))
-
-    // Start the fetch action
-    return fetch(payload.apiUrl, requestHeaders)
-      .then(response => {
-
-          /* istanbul ignore if - development only functionality */
-          if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
-            console.log('fetchRIMObject: response recieved:', response)
-          }
-          // If function to pre-process responses exists, call it
-          if (config.preProcessResponse) {
-            response = config.preProcessResponse(response)
-          }
-
-          // Call function that will get the response JSON or
-          // throw an exception if the response is not OK
-          return getResponseJSON(payload.method, response)
-      })
-      .then(json => dispatch(fetchSuccess(payload, json)))
-      .catch(error => dispatch(fetchError(payload, error)))
-  }
-}
 
 /* Creates API headers for a fetch request based on payload information */
 export function getApiHeaders (payload) {
