@@ -6,9 +6,10 @@ import status from './ReduxAsyncStatus'
 import serviceReducers from './ServiceReducer'
 import execute from './ExecuteRestAPICall'
 
-const OBJECT_MAP = 'OBJECT_MAP'
 const CURRENT_ID = 'CURRENT_ID'
 const EDITING_ID = 'EDITING_ID'
+const ERROR = 'ERROR'
+const OBJECT_MAP = 'OBJECT_MAP'
 const REVERT_TO = 'REVERT_TO'
 const SEARCH_DATA = 'SEARCH_DATA'
 const SEARCH_RESULTS = 'SEARCH_RESULTS'
@@ -34,10 +35,17 @@ export default class BaseRIMService {
   static _RevertTo = REVERT_TO
   static _SearchData = SEARCH_DATA
   static _SearchResults = SEARCH_RESULTS
+  static _Error = ERROR
 
   // Override to customize behavior after logout
   afterLogoutSuccess (state) {
     return state
+  }
+
+  clearError() {
+    return this._state.has(ERROR)
+      ? this.setState(this._state.delete(ERROR))
+      : this._state
   }
 
   deleteId (id) {
@@ -227,6 +235,10 @@ export default class BaseRIMService {
   // Set the editing ID for the service
   setEditingId (id) {
     return this.setState(this._state.set(EDITING_ID, id))
+  }
+
+  setError(name, message) {
+    return this.setState(this._state.set(ERROR, Map({name, message}) ) )
   }
 
   setState (state) {

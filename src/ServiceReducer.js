@@ -166,6 +166,7 @@ const sharedStartHandler = (service, action) => {
     if (!action.rimObj) { throw Error('sharedStart: No rimObj in action') }
     if (!service.getById(action.rimObj.getId())) { throw Error('sharedStart: rimObj not in service') }
   }
+  service.clearError()
   return service.setById(action.rimObj.setFetching(true))
 }
 
@@ -181,6 +182,7 @@ const sharedErrorHandler = (service, action) => {
       throw Error(`sharedError for ${action.verb}: rimObj with id ${action.rimObj.getId()} not in service`) 
     }
   }
+  service.setError(action.error.name, action.error.message)
   return service.setById(action.rimObj.setFetching(false))
 }
 
