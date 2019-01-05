@@ -46,9 +46,7 @@ export default function execute (service, verb, method, rimObj, nextPath = undef
       }
 
       // If function to customize headers exists, call it on the standard headers 
-      const requestHeaders = config.applyHeaders
-        ? config.applyHeaders(getApiHeaders(payload))
-        : getApiHeaders(payload)
+      const requestHeaders = config.applyHeaders(getApiHeaders(payload))
 
       // Update state indicating fetch has started
       /* istanbul ignore if - development only functionality */
@@ -65,10 +63,7 @@ export default function execute (service, verb, method, rimObj, nextPath = undef
             if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
               console.log('fetchRIMObject: response recieved:', response)
             }
-            // If function to pre-process responses exists, call it
-            if (config.preProcessResponse) {
-              response = config.preProcessResponse(response)
-            }
+            response = config.preProcessResponse(response)
 
             // Call function that will get the response JSON or
             // throw an exception if the response is not OK

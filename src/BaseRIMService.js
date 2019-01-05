@@ -62,9 +62,7 @@ export default class BaseRIMService {
   }
 
   getApiCollectionPath () {
-    return config.getCollectionApiPath
-      ? config.getCollectionApiPath(this._objectClass.name)
-      : this._defaultCollectionPath
+    return config.getCollectionApiPath(this._objectClass.name)
   }
 
   getApiPath (verb, obj) {

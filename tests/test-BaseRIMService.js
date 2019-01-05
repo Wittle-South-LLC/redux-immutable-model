@@ -160,18 +160,6 @@ describe('BaseRIMService code coverage tests', () => {
     reduceHydrate(testService.getState(), testService, errorEvent)
     chai.expect(testService.getById(testObj.getId()).isFetching()).to.be.false
   })
-  it('Returns custom collection API path if config override is set', () => {
-    const configGetCollectionApiPath = config.getCollectionApiPath
-    config.getCollectionApiPath = () => { return "test"}
-    chai.expect(testService.getApiCollectionPath()).to.equal("test")
-    config.getCollectionApiPath = configGetCollectionApiPath
-  })
-  it('Returns custom API path if config override is set', () => {
-    const configGetApiPath = config.getApiPath
-    config.getApiPath = (verb, obj) => { return "test"}
-    chai.expect(testService.getApiPath(verbs.READ, testObj)).to.equal("test")
-    config.getApiPath = configGetApiPath
-  })
 })
 
 describe('Direct reducer tests', () => {
