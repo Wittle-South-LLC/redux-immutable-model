@@ -1,7 +1,6 @@
 /* ServiceReducer.js - Reducer for BaseRIMService */
 
 import { fromJS, List } from 'immutable'    // We will be directly creating immutable objects in search results
-import verbs from "./ReduxVerbs"            // Defines the verb which can be reduced
 import status from "./ReduxAsyncStatus"     // Defines the possible status values for async calls
 
 const reduceCommitDelete = (state, service, action) => {
@@ -208,16 +207,17 @@ const sharedHydrateSuccess = (service, action) => {
   return newState
 }
 
-// Primary export, a method lookup object
-const serviceReducers = {
-  [verbs.DELETE]: reduceCommitDelete,
-  [verbs.HYDRATE]: reduceHydrate,
-  [verbs.LOGIN]: reduceLogin,
-  [verbs.LOGOUT]: reduceLogout,
-  [verbs.READ]: reduceRead,
-  [verbs.SAVE_NEW]: reduceSaveNew,
-  [verbs.SAVE_UPDATE]: reduceSaveUpdate,
-  [verbs.SEARCH]: reduceSearch
+function getDefaultReducers(verbs) {
+  return {
+    [verbs.DELETE]: reduceCommitDelete,
+    [verbs.HYDRATE]: reduceHydrate,
+    [verbs.LOGIN]: reduceLogin,
+    [verbs.LOGOUT]: reduceLogout,
+    [verbs.READ]: reduceRead,
+    [verbs.SAVE_NEW]: reduceSaveNew,
+    [verbs.SAVE_UPDATE]: reduceSaveUpdate,
+    [verbs.SEARCH]: reduceSearch
+  }
 }
 
-export default serviceReducers
+export default getDefaultReducers

@@ -3,7 +3,7 @@ import { List, Map, fromJS } from 'immutable'
 import config from './Configuration'
 import verbs from './ReduxVerbs'
 import status from './ReduxAsyncStatus'
-import serviceReducers from './ServiceReducer'
+import getDefaultReducers from './ServiceReducer'
 import execute from './ExecuteRestAPICall'
 
 const CURRENT_ID = 'CURRENT_ID'
@@ -21,12 +21,15 @@ const globalVerbs = {
 }
 
 export default class BaseRIMService {
-  constructor(rimClass) {
+  constructor(rimClass, verbs, config) {
     this._state = this.getInitialState()
     this._objectClass = rimClass
     this._defaultCollectionPath = rimClass.name + 's'
     this._defaultApiPath = rimClass.name + 's'
+    this._defaultReducers = getDefaultReducers(verbs)
     this.reducer = this.reducer.bind(this)
+    this.verbs = verbs
+    this.config = config
   }
 
   static _ObjectMap = OBJECT_MAP
@@ -165,13 +168,13 @@ export default class BaseRIMService {
 
     // If the verb for this action is not in serviceReducers,
     // we also have no work, so return state
-    if (!(action.verb in serviceReducers)) {
+    if (!(action.verb in this._defaultReducers)) {
       return state
     }
 
     // OK, there is a serviceReducer for this action, and the
     // action affects this service, so let's reduce it
-    return this.setState(serviceReducers[action.verb](state, this, action))
+    return this.setState(this._defaultReducers[action.verb](state, this, action))
   }
 
   isCreating () {

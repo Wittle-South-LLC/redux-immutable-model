@@ -10,7 +10,6 @@ import { testAsync } from './TestUtils'
 import config from '../src/Configuration'
 import verbs from '../src/ReduxVerbs'
 import status from '../src/ReduxAsyncStatus'
-import serviceReducers from '../src/ServiceReducer'
 import BaseRIMObject from '../src/BaseRIMObject'
 import BaseRIMService from '../src/BaseRIMService'
 
@@ -24,7 +23,7 @@ const testObj = new BaseRIMObject({
   record_updated: TEST_UPDATED
 })
 // Create a service that should contain the test object
-const testService = new BaseRIMService(BaseRIMObject)
+const testService = new BaseRIMService(BaseRIMObject, verbs, config)
 
 // Create a test class different than the default for tests that need it
 class testClass extends BaseRIMObject {
@@ -119,7 +118,7 @@ describe('BaseRIMService reducer support functions', () => {
     chai.expect(testService.getState()).to.eql(expectedState)
   })
   it('reducer() generates calls object class getInitialState static method if it exists', () =>{
-    const initialStateService = new BaseRIMService(testClass)
+    const initialStateService = new BaseRIMService(testClass, verbs, config)
     const testState = initialStateService.reducer(undefined, { payload: { rimObj: testObj}})
     chai.expect(testState).to.equal("Test")
   })
@@ -150,11 +149,11 @@ describe('BaseRIMService code coverage tests', () => {
     testService.setById(testObj)
   })
   it('Invalid status to reducer throws exception', () => {
-    const reduceRead = serviceReducers[verbs.READ]
+    const reduceRead = testService._defaultReducers[verbs.READ]
     chai.expect(() => reduceRead(testService.getState(), testService, {status: 'Junk', verb: verbs.READ, rimObj: testObj})).to.throw(Error)
   })
   it('reduceHydrate clears fetching if result is error', () => {
-    const reduceHydrate = serviceReducers[verbs.HYDRATE]
+    const reduceHydrate = testService._defaultReducers[verbs.HYDRATE]
     testService.setById(testObj.setFetching(true))
     chai.expect(testService.getById(testObj.getId()).isFetching()).to.be.true
     const errorEvent = { verb: verbs.HYDRATE, status: status.ERROR, rimObj: testObj, error: new Error("Test") }
@@ -181,7 +180,7 @@ describe('Direct reducer tests', () => {
     testService.setById(testObj)
   })
   it('reduceHydrate() updates state correctly', () => {
-    const reduceHydrate = serviceReducers[verbs.HYDRATE]
+    const reduceHydrate = testService._defaultReducers[verbs.HYDRATE]
     const startEvent = { verb: verbs.HYDRATE, status: status.START, rimObj: testObj }
     reduceHydrate(testService.getState(), testService, startEvent)
     chai.expect(testService.getById(testObj.getId()).isFetching()).to.be.true
@@ -197,7 +196,7 @@ describe('Direct reducer tests', () => {
     chai.expect(testService.getById('Object1').getCreated()).to.equal('Date1')
   })
   it('reduceLogin() updates state correctly', () => {
-    const reduceLogin = serviceReducers[verbs.LOGIN]
+    const reduceLogin = testService._defaultReducers[verbs.LOGIN]
     const startEvent = { verb: verbs.LOGIN, status: status.START, rimObj: testObj }
     reduceLogin(testService.getState(), testService, startEvent)
     chai.expect(testService.getById(testObj.getId()).isFetching()).to.be.true
@@ -213,7 +212,7 @@ describe('Direct reducer tests', () => {
     chai.expect(testService.getById('Object1').getCreated()).to.equal('Date1')
   })
   it('reduceLogout() updates state correctly', () => {
-    const reduceLogout = serviceReducers[verbs.LOGOUT]
+    const reduceLogout = testService._defaultReducers[verbs.LOGOUT]
     const startEvent = { verb: verbs.LOGOUT, status: status.START, rimObj: testObj }
     reduceLogout(testService.getState(), testService, startEvent)
     chai.expect(testService.getById(testObj.getId()).isFetching()).to.be.true
@@ -224,7 +223,7 @@ describe('Direct reducer tests', () => {
   })
   it('search() error correctly updates state', () => {
     // We need a start state
-    const reduceSearch = serviceReducers[verbs.SEARCH]
+    const reduceSearch = testService._defaultReducers[verbs.SEARCH]
     const startState = testService.getState().setIn([BaseRIMService._SearchData, 'fetching'], true)
     const errorEvent = { verb: verbs.SEARCH, status: status.ERROR, rimObj: "Nothing" }
     const finishState = reduceSearch(startState, testService, errorEvent)
