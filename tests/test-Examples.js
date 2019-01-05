@@ -59,11 +59,14 @@ describe('Example: User core methods', () => {
 })
 
 describe('Example: User async methods', () => {
+  beforeEach(() => {
+    userService.emptyState()
+  })
   it('Fails saveNew for user with an invalid name', () => {
     const badUser = testObj.updateField(User._FirstNameKey, 'X')
     chai.expect(() => userService.saveNew(badUser)).to.throw(Error)
   })
-  it('saveNew(obj) correctly handles server error', (done) => {
+  it('saveNew(User) correctly handles server error', (done) => {
     // We need an object that is new to save
     let startObj = new User({
       [User._FirstNameKey]: 'Testing',
@@ -87,5 +90,52 @@ describe('Example: User async methods', () => {
     // and end states match what we expect
     testAsync(store, startState, resultState, done)
     store.dispatch(userService.saveNew(startObj))
+  })
+  it('saveUpdate(User) correctly updates state', (done) => {
+    // We need an object that is dirty to save
+    let startObj = new User({
+      [User._IdentityKey]: 'UserId1',
+      [User._FirstNameKey]: 'Testing',
+      [User._PreferencesKey]: {color: 'blue'},
+      record_created: 'Value3',
+      record_updated: 'Value4'
+    }, true, false, false)
+    chai.expect(startObj.getId()).to.equal('UserId1')
+    chai.expect(startObj.isDirty()).to.be.true
+    // Put the dirty object in the store
+    let startState = userService.setById(startObj)
+    // We need a store to fully test the dispatch features
+    let store = createStore(userService.reducer, startState, applyMiddleware(thunkMiddleware))
+    // Result object is simply the start object, not dirty
+    let resultState = userService.setById(startObj.setDirty(false))
+    // Reset state of service to start
+    userService.setState(startState)
+    // Expected API response for a successful SaveUpdate is a status 200
+    nock(config.getFetchURL()).put(userService.getApiPath(userService.config.verbs.SAVE_UPDATE, startObj)).reply(200, { result: "OK" } )
+    // Now execute the async call, validating that the start
+    // and end states match what we expect
+    testAsync(store, startState, resultState, done)
+    store.dispatch(userService.saveUpdate(startObj))
+  })
+  it('commitDelete(User) correctly updates state (code coverage)', (done) => {
+    // We need an object that is to delete
+    let startObj = new User({
+      [User._IdentityKey]: 'DeleteMe',
+      [User._FirstNameKey]: 'Testing',
+      [User._PreferencesKey]: {color: 'blue'},
+      record_created: 'Value5',
+      record_updated: 'Value6'
+    }, false, false, false)
+    chai.expect(startObj.getId()).to.equal('DeleteMe')
+    // Put the object in the store
+    let startState = userService.setById(startObj)
+    // We need a store to fully test the dispatch features
+    let store = createStore(userService.reducer, startState, applyMiddleware(thunkMiddleware))
+    // Expected API response for a successful commitDelete is a status 204
+    nock(config.getFetchURL()).delete(userService.getApiPath(userService.config.verbs.DELETE, startObj)).reply(204)
+    // Now execute the async call, validating that the start
+    // and end states match what we expect
+    testAsync(store, startState, startState, done)
+    store.dispatch(userService.commitDelete(startObj))
   })
 })

@@ -23,6 +23,11 @@ export default class User extends BaseRIMObject {
     super(createFrom, dirtyVal, fetchingVal, newVal)
   }
 
+  // Override to customize object after successfully updating
+  afterUpdateSuccess(receivedData) {
+    return this
+  }
+
   // Instance methods to get domain object values
   getFirstName () { return this._data.get(User._FirstNameKey) }
   getLastName () { return this._data.get(User._LastNameKey) }
@@ -47,7 +52,7 @@ export default class User extends BaseRIMObject {
   }
 
   getFetchPayload(verb) {
-    const result = {}
+    let result = {}
     switch (verb) {
       case defaultVerbs.SAVE_NEW:
         result[User._PasswordKey] = this.getPassword()
@@ -65,5 +70,8 @@ export default class User extends BaseRIMObject {
       default: return super.getFetchPayload(verb)
     }
     return result
+  }
+  static canDeleteFromData() {
+    return false
   }
 }

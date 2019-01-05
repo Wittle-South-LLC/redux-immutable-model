@@ -33,11 +33,6 @@ export default class BaseRIMObject extends ImmutableInherit {
     return this
   }
 
-  // Override to customize object after successfully updating
-  afterUpdateSuccess(receivedData) {
-    return this
-  }
-
   // Convenience methods assuming relevant values are at the root of the
   // _data member
   getId () {
