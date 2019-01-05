@@ -239,8 +239,8 @@ export default class BaseRIMService {
     return this.setState(this._state.set(EDITING_ID, id))
   }
 
-  setError(name, message) {
-    return this.setState(this._state.set(ERROR, Map({name, message}) ) )
+  setError(message) {
+    return this.setState(this._state.set(ERROR, message))
   }
 
   setState (state) {

@@ -181,7 +181,7 @@ const sharedErrorHandler = (service, action) => {
       throw Error(`sharedError for ${action.verb}: rimObj with id ${action.rimObj.getId()} not in service`) 
     }
   }
-  service.setError(action.error.name, action.error.message)
+  service.setError(action.errorMessage)
   return service.setById(action.rimObj.setFetching(false))
 }
 

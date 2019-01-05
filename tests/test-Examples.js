@@ -2,8 +2,13 @@
 
 import { describe, it } from 'mocha'
 import chai from 'chai'
+import nock from 'nock'
+import thunkMiddleware from 'redux-thunk'
+import { createStore, applyMiddleware } from 'redux'
+import { testAsync } from './TestUtils'
+import Configuration from '../src/Configuration'
+import BaseRIMService from '../src/BaseRIMService'
 import User from '../examples/User'
-import verbs from '../src/ReduxVerbs'
 
 const testData = {
   [User._IdentityKey]: 'UserID_1',
@@ -13,6 +18,8 @@ const testData = {
   [User._PreferencesKey]: { view: "wide" }
 }
 const testObj = new User(testData)
+const config = new Configuration()
+const userService = new BaseRIMService(User, config)
 
 describe('Example: User core methods', () => {
   it('getID() returns ID', () => {
@@ -42,11 +49,43 @@ describe('Example: User core methods', () => {
     chai.expect(invalidFirstName.isFirstNameValid()).to.be.false
   })
   it('validateAction(verb.SAVE_NEW) returns true for valid object', () => {
-    chai.expect(testObj.validateAction(verbs.SAVE_NEW)).to.be.true
+    chai.expect(testObj.validateAction(config.verbs.SAVE_NEW)).to.be.true
   })
   it('getFetchPayload(verb.SAVE_UPDATE) returns correct data', () => {
     var expectedResult = testObj.getData().toJS()
     delete expectedResult[User._IdentityKey]
-    chai.expect(testObj.getFetchPayload(verbs.SAVE_UPDATE)).to.eql(expectedResult)
+    chai.expect(testObj.getFetchPayload(config.verbs.SAVE_UPDATE)).to.eql(expectedResult)
+  })
+})
+
+describe('Example: User async methods', () => {
+  it('Fails saveNew for user with an invalid name', () => {
+    const badUser = testObj.updateField(User._FirstNameKey, 'X')
+    chai.expect(() => userService.saveNew(badUser)).to.throw(Error)
+  })
+  it('saveNew(obj) correctly handles server error', (done) => {
+    // We need an object that is new to save
+    let startObj = new User({
+      [User._FirstNameKey]: 'Testing',
+      [User._PreferencesKey]: {color: 'blue'}
+    }, false, false, true)
+    chai.expect(startObj.getId()).to.equal(User._NewID)
+    chai.expect(startObj.isNew()).to.be.true
+    // We need the new object to be stored in the service
+    const startState = userService.setById(startObj)
+    // We need a store to fully test the dispatch features
+    let store = createStore(userService.reducer, startState, applyMiddleware(thunkMiddleware))
+    chai.expect(userService.getById(User._NewID)).to.equal(startObj)
+    // Result state should have the object with the server assigned ID
+    const resultState = userService.setError("Server Error")
+    // Now reset the service state to start conditions
+    userService.setState(startState)
+    // Expected API response for a successful SaveNew is a status 200
+    // with a JSON object holding the server-assigned ID
+    nock(config.getFetchURL()).post(userService.getApiPath(userService.config.verbs.SAVE_NEW, startObj)).reply(400, "Server Error")
+    // Now execute the async call, validating that the start
+    // and end states match what we expect
+    testAsync(store, startState, resultState, done)
+    store.dispatch(userService.saveNew(startObj))
   })
 })

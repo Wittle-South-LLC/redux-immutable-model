@@ -39,7 +39,8 @@ export default function execute (service, verb, method, rimObj, nextPath = undef
       if (method !== 'GET') {
         payload['sendData'] = rimObj.getFetchPayload(verb)
       }
-      /* istanbul ignore if - development only functionality */
+
+      /* istanbul ignore if */
       if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
         console.log('execute: dispatching fetchRIMObject with payload:', payload)
       }
@@ -69,7 +70,11 @@ export default function execute (service, verb, method, rimObj, nextPath = undef
             return getResponseJSON(payload.method, response)
         })
         .then(json => dispatch(fetchSuccess(payload, json)))
-        .catch(error => dispatch(fetchError(payload, error)))
+        .catch(error => {
+          error.text().then( errorMessage => {
+            dispatch(fetchError(payload, errorMessage))
+          })
+        })
     } else {
       console.log('execute for ' + rimObj.constructor.name + 
                   ' called with action ' +  action.verb + ' while fetching')
@@ -88,11 +93,6 @@ export function getApiHeaders (payload) {
     }
   }
   if ('sendData' in payload && payload.sendData !== undefined) {
-    // Note that fetch will refuse to process a GET request that has a body
-    // for standards compliance reasons
-    if (payload.method === 'GET') {
-      throw new Error('Application Error: GET method with a body in sendData')
-    }
     result['body'] = JSON.stringify(payload.sendData)
   }
   return result
@@ -108,7 +108,7 @@ function getResponseJSON (httpVerb, response) {
       return undefined
     }
   } else {
-    throw new Error(response.text)
+    throw(response)
   }
 }
 
@@ -118,14 +118,14 @@ function fetchStart (payload) {
 }
 
 /* Redux action for all fetch errors */
-function fetchError (payload, error) {
+function fetchError (payload, errorMessage) {
   return {
     type: 'async',
     status: status.ERROR,
     verb: payload.verb,
     rimObj: payload.rimObj,
     nextPath: payload.nextPath,
-    error
+    errorMessage
   }
 }
 

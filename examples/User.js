@@ -1,6 +1,6 @@
 /* User.js - Example subclass of BaseRIMObject */
 import BaseRIMObject from '../src/BaseRIMObject'
-import verbs from '../src/ReduxVerbs'
+import defaultVerbs from '../src/ReduxVerbs'
 
 // Simple example of a User domain object. For example purposes,
 // assume password is only provided to the server during user creation,
@@ -19,8 +19,8 @@ export default class User extends BaseRIMObject {
   // Base API path for this set of objects
   static _ApiBasePath = '/users'
 
-  constructor(createFrom) {
-    super(createFrom)
+  constructor(createFrom, dirtyVal = false, fetchingVal = false, newVal = false) {
+    super(createFrom, dirtyVal, fetchingVal, newVal)
   }
 
   // Instance methods to get domain object values
@@ -39,9 +39,9 @@ export default class User extends BaseRIMObject {
   // One sample operation pre-validation
   validateAction (verb) {
     switch (verb) {
-      case verbs.SAVE_UPDATE:
+      case defaultVerbs.SAVE_UPDATE:
         // We're falling through here on purpose
-      case verbs.SAVE_NEW: return this.isFirstNameValid()
+      case defaultVerbs.SAVE_NEW: return this.isFirstNameValid()
       default: return true
     }
   }
@@ -49,17 +49,17 @@ export default class User extends BaseRIMObject {
   getFetchPayload(verb) {
     const result = {}
     switch (verb) {
-      case verbs.SAVE_NEW:
+      case defaultVerbs.SAVE_NEW:
         result[User._PasswordKey] = this.getPassword()
         // We're falling through here on purpose
-      case verbs.SAVE_UPDATE:
+      case defaultVerbs.SAVE_UPDATE:
         result[User._FirstNameKey] = this.getFirstName()
         result[User._LastNameKey] = this.getLastName()
         result[User._PreferencesKey] = this.getPreferences().toJS()
         result[User._UsernameKey] = this.getUsername()
         break;
-      case verbs.DELETE:
-      case verbs.READ:
+      case defaultVerbs.DELETE:
+      case defaultVerbs.READ:
         result = undefined
         break;
       default: return super.getFetchPayload(verb)
