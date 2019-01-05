@@ -1,12 +1,31 @@
 /* Configuration.js - Configuration object for redux-immutable-model */
 
+import defaultVerbs from './ReduxVerbs'
+import getDefaultReducers from './ServiceReducer'
+
 class Configuration {
   constructor() {
+    this.verbs = defaultVerbs
+    this.globalVerbs = {
+      [this.verbs.LOGIN]: true,
+      [this.verbs.LOGOUT]: true,
+      [this.verbs.HYDRATE]: true
+    }
+    this.reducers = getDefaultReducers(this.verbs)
     this.getFetchURL = () => process.env.API_URL
     this.applyHeaders = (headers) => headers
     this.preProcessResponse = (response) => response
     this.getCollectionApiPath = (classname) => classname + 's'
     this.getApiPath = undefined
+  }
+
+  addVerb(verb, reducer) {
+    this.verbs[verb] = verb
+    this.reducers[verb] = reducer
+  }
+
+  getReducer(verb) {
+    return this.reducers[verb]
   }
 
   // Override default getFetchURL function that returns the value of
@@ -48,6 +67,4 @@ class Configuration {
   }
 }
 
-const RIMConfiguration = new Configuration()
-
-export default RIMConfiguration
+export default Configuration

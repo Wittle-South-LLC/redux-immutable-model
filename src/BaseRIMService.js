@@ -1,9 +1,6 @@
 /* Base RIM Service - Basic service for managing RIM object collections */
 import { List, Map, fromJS } from 'immutable'
-import config from './Configuration'
-import verbs from './ReduxVerbs'
 import status from './ReduxAsyncStatus'
-import getDefaultReducers from './ServiceReducer'
 import execute from './ExecuteRestAPICall'
 
 const CURRENT_ID = 'CURRENT_ID'
@@ -14,21 +11,13 @@ const REVERT_TO = 'REVERT_TO'
 const SEARCH_DATA = 'SEARCH_DATA'
 const SEARCH_RESULTS = 'SEARCH_RESULTS'
 
-const globalVerbs = {
-  [verbs.LOGIN]: true,
-  [verbs.LOGOUT]: true,
-  [verbs.HYDRATE]: true
-}
-
 export default class BaseRIMService {
-  constructor(rimClass, verbs, config) {
+  constructor(rimClass, config) {
     this._state = this.getInitialState()
     this._objectClass = rimClass
     this._defaultCollectionPath = rimClass.name + 's'
     this._defaultApiPath = rimClass.name + 's'
-    this._defaultReducers = getDefaultReducers(verbs)
     this.reducer = this.reducer.bind(this)
-    this.verbs = verbs
     this.config = config
   }
 
@@ -43,6 +32,10 @@ export default class BaseRIMService {
   // Override to customize behavior after logout
   afterLogoutSuccess (state) {
     return state
+  }
+
+  applyHeaders(headers) {
+    return this.config.applyHeaders(headers)
   }
 
   clearError() {
@@ -62,26 +55,26 @@ export default class BaseRIMService {
   }
 
   getApiCollectionPath () {
-    return config.getCollectionApiPath(this._objectClass.name)
+    return this.config.getCollectionApiPath(this._objectClass.name)
   }
 
   getApiPath (verb, obj) {
     let result = undefined
     // If the application configuration supplied a method for customizing
     // the API url, try it with this verb & object
-    if (config.getApiPath) {
-      result = config.getApiPath(verb, obj)
+    if (this.config.getApiPath) {
+      result = this.config.getApiPath(verb, obj)
     }
     // If the customization yielded a URL, we're done, so return it
     if (result) { return result }
     result = '/' + this._defaultApiPath
     switch (verb) {
-      case verbs.READ:
-      case verbs.DELETE:
-      case verbs.UPDATE:
+      case this.config.verbs.READ:
+      case this.config.verbs.DELETE:
+      case this.config.verbs.UPDATE:
         result += '/' + obj.getId()
         break
-      case verbs.SEARCH:
+      case this.config.verbs.SEARCH:
         // In this case, obj is the text to search
         result += '?search_text=' + obj
     }
@@ -108,6 +101,10 @@ export default class BaseRIMService {
 
   getEditingId () {
     return this._state.get(EDITING_ID)
+  }
+
+  getFetchURL () {
+    return this.config.getFetchURL()
   }
 
   getInitialState () {
@@ -160,19 +157,19 @@ export default class BaseRIMService {
         (action.rimObj.constructor !== this.getObjectClass() &&
          typeof action.rimObj !== 'string' &&
         action.status !== status.SUCCESS &&
-        !(action.verb in globalVerbs))) {
+        !(action.verb in this.config.globalVerbs))) {
       return state
     }
 
     // If the verb for this action is not in serviceReducers,
     // we also have no work, so return state
-    if (!(action.verb in this._defaultReducers)) {
+    if (!this.config.getReducer(action.verb)) {
       return state
     }
 
     // OK, there is a serviceReducer for this action, and the
     // action affects this service, so let's reduce it
-    return this.setState(this._defaultReducers[action.verb](state, this, action))
+    return this.setState(this.config.getReducer(action.verb)(state, this, action))
   }
 
   isCreating () {
@@ -193,24 +190,28 @@ export default class BaseRIMService {
     }
   }
 
+  preProcessResponse (response) {
+    return this.config.preProcessResponse(response)
+  }
+
   read (rimObj, nextPath = undefined) {
-    return execute(this, verbs.READ, 'GET', rimObj, nextPath)
+    return execute(this, this.config.verbs.READ, 'GET', rimObj, nextPath)
   }
 
   saveNew (rimObj, nextPath = undefined) {
-    return execute(this, verbs.SAVE_NEW, 'POST', rimObj, nextPath)
+    return execute(this, this.config.verbs.SAVE_NEW, 'POST', rimObj, nextPath)
   }
 
   saveUpdate (rimObj, nextPath = undefined) {
-    return execute(this, verbs.SAVE_UPDATE, 'PUT', rimObj, nextPath)
+    return execute(this, this.config.verbs.SAVE_UPDATE, 'PUT', rimObj, nextPath)
   }
 
   commitDelete (rimObj, nextPath = undefined) {
-    return execute(this, verbs.DELETE, 'DELETE', rimObj, nextPath)
+    return execute(this, this.config.verbs.DELETE, 'DELETE', rimObj, nextPath)
   }
 
   search (searchText, nextPath = undefined) {
-    return execute(this, verbs.SEARCH, 'GET', searchText, nextPath)
+    return execute(this, this.config.verbs.SEARCH, 'GET', searchText, nextPath)
   }
 
   setById (rimObj) {

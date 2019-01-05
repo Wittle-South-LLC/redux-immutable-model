@@ -2,7 +2,6 @@
 
 import fetch from 'isomorphic-fetch'
 import status from './ReduxAsyncStatus'
-import config from './Configuration'
 
 // TODO: Ensure that pre-processing options can be used for Flask-JWT-Extended
 //       - I expect it can, because I should be able to get cookies in response
@@ -31,7 +30,7 @@ export default function execute (service, verb, method, rimObj, nextPath = undef
     /* istanbul ignore else - Code is unreachable by design */
     if (!service.isFetching(rimObj)) {
       let payload = {
-        apiUrl: config.getFetchURL() + service.getApiPath(verb, rimObj),
+        apiUrl: service.getFetchURL() + service.getApiPath(verb, rimObj),
         method,
         verb,
         nextPath,
@@ -46,7 +45,7 @@ export default function execute (service, verb, method, rimObj, nextPath = undef
       }
 
       // If function to customize headers exists, call it on the standard headers 
-      const requestHeaders = config.applyHeaders(getApiHeaders(payload))
+      const requestHeaders = service.applyHeaders(getApiHeaders(payload))
 
       // Update state indicating fetch has started
       /* istanbul ignore if - development only functionality */
@@ -63,7 +62,7 @@ export default function execute (service, verb, method, rimObj, nextPath = undef
             if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
               console.log('fetchRIMObject: response recieved:', response)
             }
-            response = config.preProcessResponse(response)
+            response = service.preProcessResponse(response)
 
             // Call function that will get the response JSON or
             // throw an exception if the response is not OK

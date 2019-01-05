@@ -2,7 +2,7 @@
 
 // TODO: Determine how this aligns to configura
 
-const verbs = {
+const defaultVerbs = {
   HYDRATE:          'HYDRATE',          // Reload state during client refresh
   LOGIN:            'LOGIN',            // Authenticate user
   LOGOUT:           'LOGOUT',           // Clear authentication
@@ -13,4 +13,4 @@ const verbs = {
   SEARCH:           'SEARCH'            // Search for objects
 }
 
-export default verbs
+export default defaultVerbs

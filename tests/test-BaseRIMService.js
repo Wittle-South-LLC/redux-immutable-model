@@ -7,8 +7,8 @@ import nock from 'nock'
 import thunkMiddleware from 'redux-thunk'
 import { createStore, applyMiddleware } from 'redux'
 import { testAsync } from './TestUtils'
-import config from '../src/Configuration'
-import verbs from '../src/ReduxVerbs'
+import Configuration from '../src/Configuration'
+import defaultVerbs from '../src/ReduxVerbs'
 import status from '../src/ReduxAsyncStatus'
 import BaseRIMObject from '../src/BaseRIMObject'
 import BaseRIMService from '../src/BaseRIMService'
@@ -22,8 +22,9 @@ const testObj = new BaseRIMObject({
   record_created: TEST_CREATED,
   record_updated: TEST_UPDATED
 })
+const config = new Configuration()
 // Create a service that should contain the test object
-const testService = new BaseRIMService(BaseRIMObject, verbs, config)
+const testService = new BaseRIMService(BaseRIMObject, config)
 
 // Create a test class different than the default for tests that need it
 class testClass extends BaseRIMObject {
@@ -118,7 +119,7 @@ describe('BaseRIMService reducer support functions', () => {
     chai.expect(testService.getState()).to.eql(expectedState)
   })
   it('reducer() generates calls object class getInitialState static method if it exists', () =>{
-    const initialStateService = new BaseRIMService(testClass, verbs, config)
+    const initialStateService = new BaseRIMService(testClass, config)
     const testState = initialStateService.reducer(undefined, { payload: { rimObj: testObj}})
     chai.expect(testState).to.equal("Test")
   })
@@ -127,7 +128,7 @@ describe('BaseRIMService reducer support functions', () => {
   })
   it('Returns existing state for actions for other classes', () => {
     const testAction = {
-      verb: verbs.SAVE_NEW,
+      verb: defaultVerbs.SAVE_NEW,
       status: status.FETCH_START,
       rimObj: tcObject
     }
@@ -149,14 +150,14 @@ describe('BaseRIMService code coverage tests', () => {
     testService.setById(testObj)
   })
   it('Invalid status to reducer throws exception', () => {
-    const reduceRead = testService._defaultReducers[verbs.READ]
-    chai.expect(() => reduceRead(testService.getState(), testService, {status: 'Junk', verb: verbs.READ, rimObj: testObj})).to.throw(Error)
+    const reduceRead = config.getReducer(defaultVerbs.READ)
+    chai.expect(() => reduceRead(testService.getState(), testService, {status: 'Junk', verb: defaultVerbs.READ, rimObj: testObj})).to.throw(Error)
   })
   it('reduceHydrate clears fetching if result is error', () => {
-    const reduceHydrate = testService._defaultReducers[verbs.HYDRATE]
+    const reduceHydrate = config.getReducer(defaultVerbs.HYDRATE)
     testService.setById(testObj.setFetching(true))
     chai.expect(testService.getById(testObj.getId()).isFetching()).to.be.true
-    const errorEvent = { verb: verbs.HYDRATE, status: status.ERROR, rimObj: testObj, error: new Error("Test") }
+    const errorEvent = { verb: defaultVerbs.HYDRATE, status: status.ERROR, rimObj: testObj, error: new Error("Test") }
     reduceHydrate(testService.getState(), testService, errorEvent)
     chai.expect(testService.getById(testObj.getId()).isFetching()).to.be.false
   })
@@ -168,8 +169,8 @@ describe('Direct reducer tests', () => {
     testService.setById(testObj)
   })
   it('reduceHydrate() updates state correctly', () => {
-    const reduceHydrate = testService._defaultReducers[verbs.HYDRATE]
-    const startEvent = { verb: verbs.HYDRATE, status: status.START, rimObj: testObj }
+    const reduceHydrate = config.getReducer(defaultVerbs.HYDRATE)
+    const startEvent = { verb: defaultVerbs.HYDRATE, status: status.START, rimObj: testObj }
     reduceHydrate(testService.getState(), testService, startEvent)
     chai.expect(testService.getById(testObj.getId()).isFetching()).to.be.true
     const receivedData = {
@@ -179,13 +180,13 @@ describe('Direct reducer tests', () => {
         { ID: 'Object3', record_created: 'Date3'}
       ]
     }
-    const successEvent = { verb: verbs.HYDRATE, status: status.SUCCESS, rimObj: testObj, receivedData }
+    const successEvent = { verb: defaultVerbs.HYDRATE, status: status.SUCCESS, rimObj: testObj, receivedData }
     reduceHydrate(testService.getState(), testService, successEvent)
     chai.expect(testService.getById('Object1').getCreated()).to.equal('Date1')
   })
   it('reduceLogin() updates state correctly', () => {
-    const reduceLogin = testService._defaultReducers[verbs.LOGIN]
-    const startEvent = { verb: verbs.LOGIN, status: status.START, rimObj: testObj }
+    const reduceLogin = config.getReducer(defaultVerbs.LOGIN)
+    const startEvent = { verb: defaultVerbs.LOGIN, status: status.START, rimObj: testObj }
     reduceLogin(testService.getState(), testService, startEvent)
     chai.expect(testService.getById(testObj.getId()).isFetching()).to.be.true
     const receivedData = {
@@ -195,25 +196,25 @@ describe('Direct reducer tests', () => {
         { ID: 'Object3', record_created: 'Date3'}
       ]
     }
-    const successEvent = { verb: verbs.LOGIN, status: status.SUCCESS, rimObj: testObj, receivedData }
+    const successEvent = { verb: defaultVerbs.LOGIN, status: status.SUCCESS, rimObj: testObj, receivedData }
     reduceLogin(testService.getState(), testService, successEvent)
     chai.expect(testService.getById('Object1').getCreated()).to.equal('Date1')
   })
   it('reduceLogout() updates state correctly', () => {
-    const reduceLogout = testService._defaultReducers[verbs.LOGOUT]
-    const startEvent = { verb: verbs.LOGOUT, status: status.START, rimObj: testObj }
+    const reduceLogout = config.getReducer(defaultVerbs.LOGOUT)
+    const startEvent = { verb: defaultVerbs.LOGOUT, status: status.START, rimObj: testObj }
     reduceLogout(testService.getState(), testService, startEvent)
     chai.expect(testService.getById(testObj.getId()).isFetching()).to.be.true
     const receivedData = {}
-    const successEvent = { verb: verbs.LOGOUT, status: status.SUCCESS, rimObj: testObj, receivedData }
+    const successEvent = { verb: defaultVerbs.LOGOUT, status: status.SUCCESS, rimObj: testObj, receivedData }
     reduceLogout(testService.getState(), testService, successEvent)
     chai.expect(testService.getObjectMap().equals(Map({}))).to.be.true
   })
   it('search() error correctly updates state', () => {
     // We need a start state
-    const reduceSearch = testService._defaultReducers[verbs.SEARCH]
+    const reduceSearch = config.getReducer(defaultVerbs.SEARCH)
     const startState = testService.getState().setIn([BaseRIMService._SearchData, 'fetching'], true)
-    const errorEvent = { verb: verbs.SEARCH, status: status.ERROR, rimObj: "Nothing" }
+    const errorEvent = { verb: defaultVerbs.SEARCH, status: status.ERROR, rimObj: "Nothing" }
     const finishState = reduceSearch(startState, testService, errorEvent)
     chai.expect(finishState.hasIn([BaseRIMService._SearchData, 'fetching'])).to.be.false
   })
@@ -238,7 +239,7 @@ describe('BaseRIMService action methods - true async tests', () => {
     testService.setState(startState)
     // Create the store so we test the entire dispatch chain
     let store = createStore(testService.reducer, startState, applyMiddleware(thunkMiddleware))
-    nock(config.getFetchURL()).get(testService.getApiPath(verbs.READ, startObj)).reply(200, {
+    nock(config.getFetchURL()).get(testService.getApiPath(defaultVerbs.READ, startObj)).reply(200, {
       ID: 'TestID1',
       record_created: '2019-01-01T00:00:00.000Z'
     })
@@ -275,7 +276,7 @@ describe('BaseRIMService action methods - true async tests', () => {
     testService.setState(startState)
     // Expected API response for a successful SaveNew is a status 200
     // with a JSON object holding the server-assigned ID
-    nock(config.getFetchURL()).post(testService.getApiPath(verbs.SAVE_NEW, startObj)).reply(200, { ID: objId })
+    nock(config.getFetchURL()).post(testService.getApiPath(defaultVerbs.SAVE_NEW, startObj)).reply(200, { ID: objId })
     // Now execute the async call, validating that the start
     // and end states match what we expect
     testAsync(store, startState, resultState, done)
@@ -310,7 +311,7 @@ describe('BaseRIMService action methods - true async tests', () => {
     // Reset state of service to start
     testService.setState(startState)
     // Expected API response for a successful SaveUpdate is a status 200
-    nock(config.getFetchURL()).put(testService.getApiPath(verbs.SAVE_UPDATE, startObj)).reply(200, { result: "OK" } )
+    nock(config.getFetchURL()).put(testService.getApiPath(defaultVerbs.SAVE_UPDATE, startObj)).reply(200, { result: "OK" } )
     // Now execute the async call, validating that the start
     // and end states match what we expect
     testAsync(store, startState, resultState, done)
@@ -342,7 +343,7 @@ describe('BaseRIMService action methods - true async tests', () => {
     // Reset state of service to start
     testService.setState(startState)
     // Expected API response for a successful commitDelete is a status 204
-    nock(config.getFetchURL()).delete(testService.getApiPath(verbs.DELETE, startObj)).reply(204)
+    nock(config.getFetchURL()).delete(testService.getApiPath(defaultVerbs.DELETE, startObj)).reply(204)
     // Now execute the async call, validating that the start
     // and end states match what we expect
     testAsync(store, startState, resultState, done)
@@ -363,7 +364,7 @@ describe('BaseRIMService action methods - true async tests', () => {
     // Need a result state with these objects where they are supposed to be
     let resultState = startState.set(BaseRIMService._SearchResults, fromJS(searchResponse))
     resultState = resultState.deleteIn([BaseRIMService._SearchData, 'fetching'])
-    nock(config.getFetchURL()).get(testService.getApiPath(verbs.SEARCH, "Nothing")).reply(200,searchResponse)
+    nock(config.getFetchURL()).get(testService.getApiPath(defaultVerbs.SEARCH, "Nothing")).reply(200,searchResponse)
     testAsync(store, startState, resultState, done)
     store.dispatch(testService.search("Nothing"))
   })
