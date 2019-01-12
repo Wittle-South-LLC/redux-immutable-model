@@ -183,9 +183,8 @@ export default class BaseRIMService {
       // a fetching property
       return this._state.hasIn([SEARCH_DATA, 'fetching'])
     }
-    else if (obj.isFetching) { return obj.isFetching() }
-    /* istanbul ignore next - This is debug code only and should be stripped in production */
-    else if (process.env.NODE_ENV !== 'production') {
+    else /* istanbul ignore next */ if (obj.isFetching) { return obj.isFetching() }
+    else /* istanbul ignore next */ if (process.env.NODE_ENV !== 'production') {
       throw new Error(`BaseRIMService: ${this._objectClass.name} isFetching(): invalid argument: `, obj)
     }
   }
@@ -254,6 +253,7 @@ export default class BaseRIMService {
     const jsSearchObject = searchObject.toJS()
     const jsRIMObject = rimObject.getData().toJS()
     for (var prop in jsSearchObject) {
+      /* istanbul ignore else */
       if (jsSearchObject.hasOwnProperty(prop) && prop in jsRIMObject) {
         jsSearchObject[prop] = jsRIMObject[prop]
       }

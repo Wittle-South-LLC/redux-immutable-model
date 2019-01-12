@@ -31,7 +31,7 @@ class Configuration {
   // Override default getFetchURL function that returns the value of
   // process.env.API_URL
   setGetFetchURL(myFunc) {
-    this.getFetchUrl = myFunc
+    this.getFetchURL = myFunc
   }
 
   // Function that will modify headers as needed, intended to
@@ -63,7 +63,7 @@ class Configuration {
   // This method allows the application to provide a specific API URL
   // for a given verb and object
   setGetApiPath(myFunc) {
-    this._getApiPath = myFunc
+    this.getApiPath = myFunc
   }
 }
 

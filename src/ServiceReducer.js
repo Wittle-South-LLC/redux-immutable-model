@@ -59,6 +59,7 @@ const reduceLogout = (state, service, action) => {
       // Object class can override default behavior of logout state, in case
       // application requires some content (e.g. domain objects in a new state)
       let logoutState = service.getInitialState()
+      /* istanbul ignore else */
       if (service.afterLogoutSuccess) {
         logoutState = service.afterLogoutSuccess(logoutState)
       }
@@ -96,6 +97,7 @@ const reduceSaveNew = (state, service, action) => {
       let newObj = action.rimObj.setFetching(false).setDirty(false).setNew(false)
                                 .updateField(idKey, action.receivedData[idKey])
       // Allows for post-processing of the object after creation
+      /* istanbul ignore else */
       if (newObj.afterCreateSuccess) {
         newObj = newObj.afterCreateSuccess(action.receivedData)
       }
@@ -125,6 +127,7 @@ const reduceSaveUpdate = (state, service, action) => {
       newState = service.setEditingId(undefined)
       // Now if this class allows editing of search results, update the
       // search result object that has the same identity
+      /* istanbul ignore else */
       if (service.updateSearchObject) {
         let editIndex = state.get(service.constructor._SearchResults)
                              .findIndex((o) => o.get(service.getObjectClass()._IdentityKey) === action.rimObj.getId())
@@ -142,9 +145,11 @@ const reduceSaveUpdate = (state, service, action) => {
 const reduceSearch = (state, service, action) => {
   switch(action.status) {
     case status.START:
-      return state.set(service.constructor._SearchResults, List([])).setIn([service.constructor._SearchData, 'fetching'], true)
+      let newState = service.clearError()
+      return newState.set(service.constructor._SearchResults, List([])).setIn([service.constructor._SearchData, 'fetching'], true)
     case status.ERROR:
-      return state.deleteIn([service.constructor._SearchData, 'fetching'])
+      newState = service.setError(action.errorMessage)
+      return newState.deleteIn([service.constructor._SearchData, 'fetching'])
     case status.SUCCESS:
       let res = List([])
       for (let u of action.receivedData) {
@@ -152,7 +157,7 @@ const reduceSearch = (state, service, action) => {
       }
       return state.set(service.constructor._SearchResults, res).deleteIn([service.constructor._SearchData, 'fetching'])
     /* istanbul ignore next */
-    default: return sharedDefault(state, action)
+    default: return sharedDefaultHandler(state, action)
   }
 }
 
@@ -160,7 +165,7 @@ const reduceSearch = (state, service, action) => {
 // All it is going to do is set the fetching indicator on the
 // action.rimObj
 const sharedStartHandler = (service, action) => {
-  /* istanbul ignore if */
+  /* istanbul ignore next */
   if (process.env.NODE_ENV !== 'production') {
     if (!action.rimObj) { throw Error('sharedStart: No rimObj in action') }
     if (!service.getById(action.rimObj.getId())) { throw Error('sharedStart: rimObj not in service') }
@@ -173,7 +178,7 @@ const sharedStartHandler = (service, action) => {
 // All it is going to do is clear the fetching indicator on the
 // action.rimObj; actual error reporting is handled separately
 const sharedErrorHandler = (service, action) => {
-  /* istanbul ignore if */
+  /* istanbul ignore next */
   if (process.env.NODE_ENV !== 'production') {
     if (!action.rimObj) {
       throw Error(`sharedError for ${action.verb}: No rimObj in action`) }
@@ -188,6 +193,7 @@ const sharedErrorHandler = (service, action) => {
 // We should not see reducers called with action verbs and invalid
 // or missing status values, if we do then except
 const sharedDefaultHandler = (state, action) => {
+  /* istanbul ignore else */
   if (process.env.NODE_ENV !== 'production') {
     throw Error(`Invalid status ${action.status} for verb ${action.verb}`)
   }
@@ -199,6 +205,7 @@ const sharedHydrateSuccess = (service, action) => {
   let newState = service.getInitialState()
   const myClass = service.getObjectClass()
   const items = action.receivedData[service.getApiCollectionPath()]
+  /* istanbul ignore else */
   if (items) {
     for (var i = 0, iLen = items.length; i < iLen; i++) {
       newState = service.setById(new myClass(items[i]))

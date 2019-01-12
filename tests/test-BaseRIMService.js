@@ -214,9 +214,13 @@ describe('Direct reducer tests', () => {
     // We need a start state
     const reduceSearch = config.getReducer(defaultVerbs.SEARCH)
     const startState = testService.getState().setIn([BaseRIMService._SearchData, 'fetching'], true)
-    const errorEvent = { verb: defaultVerbs.SEARCH, status: status.ERROR, rimObj: "Nothing" }
-    const finishState = reduceSearch(startState, testService, errorEvent)
-    chai.expect(finishState.hasIn([BaseRIMService._SearchData, 'fetching'])).to.be.false
+    const errorEvent = { verb: defaultVerbs.SEARCH, status: status.ERROR, rimObj: "Nothing", errorMessage: "Error" }
+    const successEvent = { verb: defaultVerbs.SEARCH, status: status.START, rimObj: "Nothing" }
+    const errorState = reduceSearch(startState, testService, errorEvent)
+    chai.expect(errorState.hasIn([BaseRIMService._SearchData, 'fetching'])).to.be.false
+    chai.expect(errorState.has(BaseRIMService._Error)).to.be.true
+    const clearState = reduceSearch(errorState, testService, successEvent)
+    chai.expect(clearState.has(BaseRIMService._Error)).to.be.false
   })
 })
 

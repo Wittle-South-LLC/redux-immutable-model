@@ -58,6 +58,31 @@ describe('Example: User core methods', () => {
   })
 })
 
+describe('Example: Code coverage tests', () => {
+  it('Retuns a custom API path if getApiPath function provided in configuration', () => {
+    const testConfig = new Configuration()
+    testConfig.setGetApiPath(() => "Testing")
+    const testService = new BaseRIMService(User, testConfig)
+    chai.expect(testService.getApiPath(config.verbs.SAVE_NEW, testObj)).to.equal("Testing")
+  })
+  it('Configuration setters work correctly', () => {
+    const testConfig = new Configuration()
+    testConfig.setGetCollectionApiPath(() => "GetCollectionApiPath")
+    chai.expect(testConfig.getCollectionApiPath()).to.equal("GetCollectionApiPath")
+    testConfig.setPreProcessResponse(() => "preProcessResponse")
+    chai.expect(testConfig.preProcessResponse()).to.equal("preProcessResponse")
+    testConfig.setApplyHeaders(() => "applyHeaders")
+    chai.expect(testConfig.applyHeaders()).to.equal("applyHeaders")
+    testConfig.setGetFetchURL(() => "getFetchURL")
+    chai.expect(testConfig.getFetchURL()).to.equal("getFetchURL")
+  })
+  it('Adds verbs correctly', () => {
+    const testConfig = new Configuration()
+    testConfig.addVerb('VERB_TEST', () => "Testing")
+    chai.expect(testConfig.reducers['VERB_TEST']()).to.equal("Testing")
+  })
+})
+
 describe('Example: User async methods', () => {
   beforeEach(() => {
     userService.emptyState()
