@@ -167,7 +167,7 @@ export default class BaseRIMService {
       return state
     }
 
-    // OK, there is a serviceReducer for this action, and the
+    // OK, there is a serviceReducers for this action, and the
     // action affects this service, so let's reduce it
     return this.setState(this.config.getReducer(action.verb)(state, this, action))
   }

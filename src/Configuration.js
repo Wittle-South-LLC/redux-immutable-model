@@ -1,7 +1,7 @@
 /* Configuration.js - Configuration object for redux-immutable-model */
 
 import defaultVerbs from './ReduxVerbs'
-import getDefaultReducers from './ServiceReducer'
+import getDefaultReducers from './ServiceReducers'
 
 class Configuration {
   constructor() {

@@ -1,4 +1,4 @@
-/* ServiceReducer.js - Reducer for BaseRIMService */
+/* ServiceReducers.js - Reducer for BaseRIMService */
 
 import { fromJS, List } from 'immutable'    // We will be directly creating immutable objects in search results
 import status from "./ReduxAsyncStatus"     // Defines the possible status values for async calls
@@ -84,7 +84,7 @@ const reduceRead = (state, service, action) => {
 const reduceSaveNew = (state, service, action) => {
   /* istanbul ignore if */
   if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
-    console.log('ServiceReducer.reduceSaveNew: received action =', action)
+    console.log('ServiceReducers.reduceSaveNew: received action =', action)
   }
   switch(action.status) {
     case status.START: return sharedStartHandler(service, action)

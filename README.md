@@ -1,56 +1,59 @@
 redux-immutable-model
 =====================
 
-This module contains the infrastructure necessary to dramatically simplify
-the use of Redux for complex data models and application state changes. It
-leverages immutable-inherit as the base of entity objects that are immutable
-yet support inheritance, creating the opportunity to share logic across
-models.
+This module simplifies working with application data models that are backed by
+RESTful APIs in Redux applications. It is a baseline component of a framework
+that provides automatically generated code from OpenAPI 3.0 schema
+specifications.
 
-In addition, this library standardizes asynchronous access across model 
-objects, and provides a base implementation of most synchronous and
-asynchronous tasks that can also be shared across different model objects.
+Objectives
+----------
 
-Finally, this library is the baseline for OpenAPI 3.0 automated code 
-generation that can generate a complete Redux capable model from an
-OpenAPI 3.0 set of schemas.
+* Eliminate the need to manually code asynchronous Redux actions (e.g. start,
+  success, error) for CRUD operations on data model objects.
+* Provide object methods to access data model object attributes directly,
+  without needing Immutable paths.
+* Simplify common data model state tracking (instance is new, dirty, ...)
+* Provide application access to relevant instances of data model objects via
+  a data service paradigm. Each data model object has a corresponding service,
+  and that service manages Redux state for all instances of that data model
+  object.
+* Provide simple methods for CRUD operations on an instance via the service.
 
-Based on ImmutableInherit
--------------------------
+Integrations
+------------
 
-This project goes beyond what is available in ImmutableInherit by adding 
-a core understanding of asynchronous object state, as well as support
-for constructing HTTP request payloads suitable for XXX APIs.
+* Facilitates integration with different security frameworks; application can
+  provide hooks to collect / set required HTTP security components such as
+  cookies and headers.
+* Internationalization support for server / async transaction error messages
+  via custom result processing.
 
-Client State Attributes
------------------------
+Integration Classes
+-------------------
 
-* isNew() / setNew() - Identifies whether this object is new, meaning
-  it exists in the client but has no presence on the server
-* isDirty() / setDirty() - Identifies whether this object has been changed 
-  on the client side.
-* isFetching / setFetching() - Identifies whether an asynchronous operation
-  is in progress for this object
+These classes will be directly accessed by any application using this frameowrk.
 
-Asynchrounous Support Methods
------------------------------
+* BaseRIMObject - Implements shared functionality for data model objects, e.g.
+  tracking client state relative to persisted state (isDirty, isNew, ...). See
+  [here](docs/BaseRIMObject.md) for more details.
+* BaseRIMService - Provides collection management and API interaction for a
+  a data model component. See [here](docs/BaseRIMService.md) for more details.
+* Configuration - Provides applications the ability to customize behavior of
+  this framework as needed for different types of integrations. See
+  [here](docs/Configuration.md) for more details.
 
-These methods support shared-code implementations of basic CRUD operations.
-They will depend on class-static data structures that will need to be
-overridden by subclasses to work effectively. See examples for details.
+Framework Modules
+-----------------
 
-* getCreatePayload() - Intended to return a JSON object suitable for RESTful
-  create actions
-* getUpdatePayload() - Intended to return a JSON object suitable for RESTful
-  update actions
+These modules are generally intended to be internal to the framework.
 
-Shared Model Attributes
------------------------
-
-These are convenience methods that are likely to be shared across most
-data model implementations. (Yes, like many other frameworks, this one
-is a bit opinionated in a few spots.)
-
-* getId() - Returns the unique identifier for this object
-* getCreated() - Returns the creation date for this object
-* getUpdated() - Returns the last updated date for this object
+* ExecuteRestAPICall - Performs fetch operations against the data model RESTful
+  APIs, including automatic generation of Redux actions. Invoked via persistence
+  actions in BaseRIMService.
+* ServiceReducers - Includes reducer methods for default CRUD actions / verbs.
+  Invoked via reducer() in BaseRIMService.
+* ReduxAsyncStatus - Constants for default redux status values for async API 
+  calls
+* ReduxVerbs - Constants for default verbs, where a verb corresponds to a CRUD
+  action
