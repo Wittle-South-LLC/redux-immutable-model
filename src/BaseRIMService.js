@@ -158,11 +158,11 @@ export default class BaseRIMService {
     //   class, we probably have work too
     // - If the status is FETCH_SUCCESS and verb is Login, 
     //   Logout, or Hydrate then we likely have work
-    if (!action.rimObj || 
+    if ((!action.rimObj || 
         (action.rimObj.constructor !== this.getObjectClass() &&
-         typeof action.rimObj !== 'string' &&
+         typeof action.rimObj !== 'string')) &&
         action.status !== status.SUCCESS &&
-        !(action.verb in this.config.globalVerbs))) {
+        !(action.verb in this.config.globalVerbs)) {
       return state
     }
 
