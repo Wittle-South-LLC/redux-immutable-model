@@ -69,6 +69,7 @@ export default class BaseRIMObject extends ImmutableInherit {
   isDirty () { return this._dirty }
   isFetching () { return this._fetching}
   isNew () { return this._new }
+  isValid () { return true }
 
   // Set whether this object is dirty
   setDirty(val) {

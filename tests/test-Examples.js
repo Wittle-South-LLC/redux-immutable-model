@@ -48,8 +48,8 @@ describe('Example: User core methods', () => {
     const invalidFirstName = testObj.updateField(User._FirstNameKey, "X")
     chai.expect(invalidFirstName.isFirstNameValid()).to.be.false
   })
-  it('validateAction(verb.SAVE_NEW) returns true for valid object', () => {
-    chai.expect(testObj.validateAction(config.verbs.SAVE_NEW)).to.be.true
+  it('isValid() returns true for valid object', () => {
+    chai.expect(testObj.isValid()).to.be.true
   })
   it('getFetchPayload(verb.SAVE_UPDATE) returns correct data', () => {
     var expectedResult = testObj.getData().toJS()

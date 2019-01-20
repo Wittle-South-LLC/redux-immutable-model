@@ -41,14 +41,10 @@ export default class User extends BaseRIMObject {
     this.getFirstName().length > 2 &&
     this.getFirstName().length < 30 }
 
-  // One sample operation pre-validation
-  validateAction (verb) {
-    switch (verb) {
-      case defaultVerbs.SAVE_UPDATE:
-        // We're falling through here on purpose
-      case defaultVerbs.SAVE_NEW: return this.isFirstNameValid()
-      default: return true
-    }
+  isValid() {
+    let result = true
+    if (!this.isFirstNameValid()) { result = false }
+    return result
   }
 
   getFetchPayload(verb) {

@@ -65,6 +65,16 @@ class Configuration {
   setGetApiPath(myFunc) {
     this.getApiPath = myFunc
   }
+
+  // If you want to validate whether a verb is valid for an object, 
+  // override this method
+  validOperation(verb, obj) {
+    let result = true
+    if ((verb === defaultVerbs.SAVE_NEW || verb === defaultVerbs.SAVE_UPDATE) && !obj.isValid()) {
+      result = false
+    }
+    return result
+  }
 }
 
 export default Configuration

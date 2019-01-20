@@ -22,8 +22,8 @@ export default function execute (service, verb, method, rimObj, nextPath = undef
   }
   // if item is a RIMObject and has a validateAction method, call it
   // for this verb to see if the object is in a state to proceed
-  if (rimObj.validateAction && !rimObj.validateAction(verb)) {
-    throw new Error(VALIDATION_FAILED)
+  if (!service.config.validOperation(verb, rimObj)) {
+    throw new Error('VALIDATION_FAILED')
   }
   return (dispatch) => {
     // We're only going to do a fetch if there isn't one in flight
