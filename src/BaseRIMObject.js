@@ -1,7 +1,7 @@
 /* BaseRIMObject.js - Extends ImmutableInherit with async status */
 
 import ImmutableInherit from 'immutable-inherit'
-import { isImmutable } from 'immutable'
+import { isImmutable, fromJS, Map } from 'immutable'
 
 // TODO: Determine if we can have named parameters with default values
 //       in the constructor like with Python; will likely simplify some
@@ -23,6 +23,9 @@ export default class BaseRIMObject extends ImmutableInherit {
     this._dirty = dirtyVal
     this._fetching = fetchingVal
     this._new = newVal
+    if (createFrom) {
+      this._data = createFrom instanceof Map ? createFrom : fromJS(createFrom)
+    }
     if (this.getId() === undefined) {
       this._data = this._data.set(this.constructor._IdentityKey, this.constructor._NewID)
     }
