@@ -99,6 +99,14 @@ export default class BaseRIMObject extends ImmutableInherit {
       : this
   }
 
+  toJS() {
+    const result = this._data.toJS()
+    result['_dirty'] = this._dirty
+    result['_fetching'] = this._fetching
+    result['_new'] = this._new
+    return result
+  }
+
   // Need to include UpdateField here that does SetDirty
   // Note - we really would benefit from Python style optional arguments with defaults
   updateField(key, value, isDirty = true) {

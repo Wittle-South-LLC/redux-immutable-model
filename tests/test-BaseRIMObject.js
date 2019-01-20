@@ -40,6 +40,17 @@ describe('BaseRIMObject Core Functions', () => {
     const newAtCreate = new BaseRIMObject({}, false, false, true)
     chai.expect(newAtCreate.isNew()).to.be.true
   })
+  it('returns toJS() value as expected', () => {
+    const expectedResult = {
+      ID: TEST_ID,
+      record_created: TEST_CREATED,
+      record_updated: TEST_UPDATED,
+      _dirty: false,
+      _fetching: false,
+      _new: false
+    }
+    chai.expect(testObj.toJS()).to.eql(expectedResult)
+  })
   it('Returns identical object if set<stateField> called with existing value', () => {
     const testDirty = testObj.setDirty(testObj.isDirty())
     chai.expect(testDirty.hashCode()).to.equal(testObj.hashCode())
