@@ -58,6 +58,9 @@ describe('BaseRIMService collection management functions', () => {
     testService.deleteId(testObj.getId())
     chai.expect(testService.getById(testObj.getId())).to.equal(undefined)
   })
+  it('getStatePath() returns default state path', () => {
+    chai.expect(testService.getStatePath()).to.equal('BaseRIMObjects')
+  })
   it('emptyState() results in an initialized state', () => {
     testService.setById(testObj)
     testService.emptyState()

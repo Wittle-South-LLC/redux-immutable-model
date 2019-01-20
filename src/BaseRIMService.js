@@ -17,6 +17,7 @@ export default class BaseRIMService {
     this._objectClass = rimClass
     this._defaultCollectionPath = rimClass.name + 's'
     this._defaultApiPath = rimClass.name + 's'
+    this._defaultStatePath = rimClass.name + 's'
     this.reducer = this.reducer.bind(this)
     this.config = config
   }
@@ -137,6 +138,10 @@ export default class BaseRIMService {
   // Get the current state
   getState () {
     return this._state
+  }
+
+  getStatePath () {
+    return this._defaultStatePath
   }
 
   reducer (state = this._objectClass.getInitialState
