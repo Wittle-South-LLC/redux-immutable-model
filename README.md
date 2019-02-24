@@ -64,4 +64,4 @@ Running Tests
 You must have the environment variable API_URL set with a path that includes the API
 version for tests to run successfully. Example:
 
-`export API_URL='http://localhost/api/v1'`
+`export API_PATH='http://localhost/api/v1'`

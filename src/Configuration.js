@@ -12,7 +12,7 @@ class Configuration {
       [this.verbs.HYDRATE]: true
     }
     this.reducers = getDefaultReducers(this.verbs)
-    this.getFetchURL = () => process.env.API_URL
+    this.getFetchURL = () => process.env.API_PATH ? process.env.API_PATH : process.env.REACT_APP_API_PATH
     this.applyHeaders = (headers) => headers
     this.preProcessResponse = (response) => response
     this.getCollectionApiPath = (classname) => classname + 's'
