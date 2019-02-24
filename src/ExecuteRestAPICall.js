@@ -85,7 +85,7 @@ export default function execute (service, verb, method, rimObj, nextPath = undef
 
 
 /* Creates API headers for a fetch request based on payload information */
-export function getApiHeaders (payload) {
+function getApiHeaders (payload) {
   const result = {
     'method': payload.method,
     'headers': {
