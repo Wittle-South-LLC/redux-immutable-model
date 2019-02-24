@@ -13,12 +13,12 @@ import status from './ReduxAsyncStatus'
 //       - I expect this can be part of the standard payload, but I'm honestly
 //         not entirely sure how this will need to work
 
-export default function execute (service, verb, method, rimObj, nextPath = undefined) {
+export default function callAPI (service, verb, method, rimObj, nextPath = undefined) {
   // If the object needs validation and validation fails, then
   // throw an exception
   /* istanbul ignore if - this is development debugging code */
   if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 1) {
-    console.log(`execute: ${verb} with ${method} on ${rimObj.constructor.name}`)
+    console.log(`callAPI: ${verb} with ${method} on ${rimObj.constructor.name}`)
   }
   // if item is a RIMObject and has a validateAction method, call it
   // for this verb to see if the object is in a state to proceed
@@ -42,7 +42,7 @@ export default function execute (service, verb, method, rimObj, nextPath = undef
 
       /* istanbul ignore if */
       if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
-        console.log('execute: dispatching fetchRIMObject with payload:', payload)
+        console.log('callAPI: dispatching fetchRIMObject with payload:', payload)
       }
 
       // If function to customize headers exists, call it on the standard headers 
@@ -76,7 +76,7 @@ export default function execute (service, verb, method, rimObj, nextPath = undef
           })
         })
     } else {
-      console.log('execute for ' + rimObj.constructor.name + 
+      console.log('callAPI for ' + rimObj.constructor.name + 
                   ' called with action ' +  action.verb + ' while fetching')
       return Promise.resolve()
     }

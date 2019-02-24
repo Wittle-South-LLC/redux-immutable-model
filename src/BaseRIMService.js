@@ -1,7 +1,7 @@
 /* Base RIM Service - Basic service for managing RIM object collections */
 import { List, Map, fromJS } from 'immutable'
 import status from './ReduxAsyncStatus'
-import execute from './ExecuteRestAPICall'
+import callAPI from './ExecuteRestAPICall'
 
 const CURRENT_ID = 'CURRENT_ID'
 const EDITING_ID = 'EDITING_ID'
@@ -199,23 +199,23 @@ export default class BaseRIMService {
   }
 
   read (rimObj, nextPath = undefined) {
-    return execute(this, this.config.verbs.READ, 'GET', rimObj, nextPath)
+    return callAPI(this, this.config.verbs.READ, 'GET', rimObj, nextPath)
   }
 
   saveNew (rimObj, nextPath = undefined) {
-    return execute(this, this.config.verbs.SAVE_NEW, 'POST', rimObj, nextPath)
+    return callAPI(this, this.config.verbs.SAVE_NEW, 'POST', rimObj, nextPath)
   }
 
   saveUpdate (rimObj, nextPath = undefined) {
-    return execute(this, this.config.verbs.SAVE_UPDATE, 'PUT', rimObj, nextPath)
+    return callAPI(this, this.config.verbs.SAVE_UPDATE, 'PUT', rimObj, nextPath)
   }
 
   commitDelete (rimObj, nextPath = undefined) {
-    return execute(this, this.config.verbs.DELETE, 'DELETE', rimObj, nextPath)
+    return callAPI(this, this.config.verbs.DELETE, 'DELETE', rimObj, nextPath)
   }
 
   search (searchText, nextPath = undefined) {
-    return execute(this, this.config.verbs.SEARCH, 'GET', searchText, nextPath)
+    return callAPI(this, this.config.verbs.SEARCH, 'GET', searchText, nextPath)
   }
 
   setById (rimObj) {
