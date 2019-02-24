@@ -57,3 +57,11 @@ These modules are generally intended to be internal to the framework.
   calls
 * ReduxVerbs - Constants for default verbs, where a verb corresponds to a CRUD
   action
+
+Running Tests
+-------------
+
+You must have the environment variable API_URL set with a path that includes the API
+version for tests to run successfully. Example:
+
+`export API_URL='http://localhost/api/v1'`
