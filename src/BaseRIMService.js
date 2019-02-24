@@ -161,8 +161,8 @@ export default class BaseRIMService {
     if ((!action.rimObj || 
         (action.rimObj.constructor !== this.getObjectClass() &&
          typeof action.rimObj !== 'string')) &&
-        action.status !== status.SUCCESS &&
-        !(action.verb in this.config.globalVerbs)) {
+        (action.status !== status.SUCCESS ||
+        !(action.verb in this.config.globalVerbs))) {
       return state
     }
 
