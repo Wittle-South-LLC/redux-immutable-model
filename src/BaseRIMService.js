@@ -35,8 +35,8 @@ export default class BaseRIMService {
     return state
   }
 
-  applyHeaders(headers) {
-    return this.config.applyHeaders(headers)
+  applyHeaders(verb, headers) {
+    return this.config.applyHeaders(verb, headers)
   }
 
   clearError() {

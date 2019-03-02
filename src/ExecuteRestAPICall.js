@@ -46,7 +46,7 @@ export default function callAPI (service, verb, method, rimObj, nextPath = undef
       }
 
       // If function to customize headers exists, call it on the standard headers 
-      const requestHeaders = service.applyHeaders(getApiHeaders(payload))
+      const requestHeaders = service.applyHeaders(verb, getApiHeaders(payload))
 
       // Update state indicating fetch has started
       /* istanbul ignore if - development only functionality */

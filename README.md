@@ -65,3 +65,8 @@ You must have the environment variable API_URL set with a path that includes the
 version for tests to run successfully. Example:
 
 `export API_PATH='http://localhost/api/v1'`
+
+Changelog
+---------
+
+* 0.5.0 - Fixes #15 - getApiHeaders needs to pass verb as well as headers to allow verb-specific behavior
