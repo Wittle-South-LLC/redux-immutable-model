@@ -48,6 +48,7 @@ Framework Modules
 
 These modules are generally intended to be internal to the framework.
 
+* ActionTypes - Defines Redux action types used by this package
 * ExecuteRestAPICall - Performs fetch operations against the data model RESTful
   APIs, including automatic generation of Redux actions. Invoked via persistence
   actions in BaseRIMService.
@@ -70,3 +71,4 @@ Changelog
 ---------
 
 * 0.5.0 - Fixes #15 - getApiHeaders needs to pass verb as well as headers to allow verb-specific behavior
+* 0.5.1 - Fixes #20 - Adds synchronous actions to start / cancel new and edit workflows

@@ -1,6 +1,7 @@
 /* Base RIM Service - Basic service for managing RIM object collections */
 import { List, Map, fromJS } from 'immutable'
 import status from './ReduxAsyncStatus'
+import actionTypes from './ActionTypes'
 import callAPI from './ExecuteRestAPICall'
 
 const CURRENT_ID = 'CURRENT_ID'
@@ -39,16 +40,32 @@ export default class BaseRIMService {
     return this.config.applyHeaders(verb, headers)
   }
 
+  cancelEdit () {
+    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_EDIT }
+  }
+
+  cancelNew () {
+    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_NEW }
+  }
+
   clearError() {
     return this._state.has(ERROR)
       ? this.setState(this._state.delete(ERROR))
       : this._state
   }
 
+  createNew (newPath = undefined) {
+    return { type: actionTypes.SYNC, verb: this.config.verbs.CREATE_NEW, newPath }
+  }
+
   deleteId (id) {
     return this._state.get(CURRENT_ID) === id
       ? this.setState(this._state.deleteIn([OBJECT_MAP, id]).set(CURRENT_ID, undefined))
       : this.setState(this._state.deleteIn([OBJECT_MAP, id]))
+  }
+
+  editField (fieldName, fieldValue, rimObj) {
+    return { type: actionTypes.SYNC, verb: this.config.verbs.EDIT, fieldName, fieldValue, rimObj }
   }
 
   emptyState () {
@@ -250,6 +267,10 @@ export default class BaseRIMService {
   setState (state) {
     this._state = state
     return state
+  }
+
+  startEdit (id) {
+    return { type: actionTypes.SYNC, verb: this.config.verbs.START_EDIT, id }
   }
 
   // The object here is to update any properties in the searchObject

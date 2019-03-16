@@ -3,6 +3,18 @@
 import { fromJS, List } from 'immutable'    // We will be directly creating immutable objects in search results
 import status from "./ReduxAsyncStatus"     // Defines the possible status values for async calls
 
+const reduceCancelEdit = (state, service, action) => {
+  const newState = service.setById(state.get(service.constructor._RevertTo))
+                          .set(service.constructor._EditingId, undefined)
+                          .set(service.constructor._RevertTo, undefined)
+  return service.setState(newState)
+}
+
+const reduceCancelNew = (state, service, action) => {
+  service.setEditingId(undefined)
+  return service.deleteId(service.getObjectClass()._NewId)
+}
+
 const reduceCommitDelete = (state, service, action) => {
   switch(action.status) {
     case status.START: return sharedStartHandler(service, action)
@@ -27,6 +39,19 @@ const reduceCommitDelete = (state, service, action) => {
     /* istanbul ignore next */
     default: return sharedDefaultHandler(state, action)
   }
+}
+
+const reduceCreateNew = (state, service, action) => {
+  const objClass = service.getObjectClass()
+  // If class has static initializer for new objects, use it
+  let newObj = objClass.afterNewSuccess
+    ? objClass.afterNewSuccess(new objClass({}, false, false, true), action)
+    : new objClass({}, false, false, true)
+  return service.setEditing(newObj)
+}
+
+const reduceEdit = (state, service, action) => {
+  return service.setById(action.rimObj.updateField(action.fieldName, action.fieldValue))
 }
 
 const reduceHydrate = (state, service, action) => {
@@ -161,6 +186,12 @@ const reduceSearch = (state, service, action) => {
   }
 }
 
+const reduceStartEdit = (state, service, action) => {
+  const newState = service.setEditingId(action.id)
+                          .set(service.constructor._RevertTo, service.getById(action.id))
+  return service.setState(newState) 
+}
+
 // This implementation of start reducing is shared across many verbs
 // All it is going to do is set the fetching indicator on the
 // action.rimObj
@@ -216,14 +247,19 @@ const sharedHydrateSuccess = (service, action) => {
 
 function getDefaultReducers(verbs) {
   return {
+    [verbs.CREATE_NEW]: reduceCreateNew,
+    [verbs.CANCEL_NEW]: reduceCancelNew,
+    [verbs.CANCEL_EDIT]: reduceCancelEdit,
     [verbs.DELETE]: reduceCommitDelete,
+    [verbs.EDIT]: reduceEdit,
     [verbs.HYDRATE]: reduceHydrate,
     [verbs.LOGIN]: reduceLogin,
     [verbs.LOGOUT]: reduceLogout,
     [verbs.READ]: reduceRead,
     [verbs.SAVE_NEW]: reduceSaveNew,
     [verbs.SAVE_UPDATE]: reduceSaveUpdate,
-    [verbs.SEARCH]: reduceSearch
+    [verbs.SEARCH]: reduceSearch,
+    [verbs.START_EDIT]: reduceStartEdit
   }
 }
 

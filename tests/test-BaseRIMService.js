@@ -171,6 +171,46 @@ describe('Direct reducer tests', () => {
     testService.emptyState()
     testService.setById(testObj)
   })
+  it('reduceStartEdit() updates state correctly', () => {
+    const reduceStartEdit = config.getReducer(defaultVerbs.START_EDIT)
+    const seEvent = testService.startEdit(testObj.getId())
+    reduceStartEdit(testService.getState(), testService, seEvent)
+    chai.expect(testService.getEditingId()).to.equal(testObj.getId())
+    chai.expect(testService.getState().get(BaseRIMService._RevertTo)).to.equal(testObj)
+  })
+  it('reduceEdit() updates state correctly', () => {
+    const reduceEdit = config.getReducer(defaultVerbs.EDIT)
+    const eEvent = testService.editField('record_created', 'testValue', testObj)
+    reduceEdit(testService.getState(), testService, eEvent)
+    chai.expect(testService.getById(testObj.getId()).getCreated()).to.equal('testValue')
+    chai.expect(testService.getById(testObj.getId()).isDirty()).to.be.true
+  })
+  it('reduceCancelEdit() updates state correctly', () => {
+    // Set start state to what it would be during an edit
+    testService.setEditingId(testObj.getId())
+    testService.setState(testService.getState().set(BaseRIMService._RevertTo, testObj))
+    const reduceCancelEdit = config.getReducer(defaultVerbs.CANCEL_EDIT)
+    const ceEvent = testService.cancelEdit()
+    reduceCancelEdit(testService.getState(), testService, ceEvent)
+    chai.expect(testService.getEditingId()).to.equal(undefined)
+    chai.expect(testService.getState().get(BaseRIMService._RevertTo)).to.equal(undefined)
+  })
+  it('reduceCreateNew() updates state correctly', () => {
+    const reduceCreateNew = config.getReducer(defaultVerbs.CREATE_NEW)
+    const cnEvent = testService.createNew()
+    reduceCreateNew(testService.getState(), testService, cnEvent)
+    chai.expect(testService.getEditingId()).to.equal(BaseRIMObject._NewID)
+  })
+  it('reduceCancelNew() updates state correctly', () => {
+    // Set start state to what it would be during an edit
+    const newObj = new BaseRIMObject()
+    testService.setById(newObj)
+    testService.setEditingId(newObj.getId())
+    const reduceCancelNew = config.getReducer(defaultVerbs.CANCEL_NEW)
+    const cnEvent = testService.cancelNew()
+    reduceCancelNew(testService.getState(), testService, cnEvent)
+    chai.expect(testService.getEditingId()).to.equal(undefined)
+  })
   it('reduceHydrate() updates state correctly', () => {
     const reduceHydrate = config.getReducer(defaultVerbs.HYDRATE)
     const startEvent = { verb: defaultVerbs.HYDRATE, status: status.START, rimObj: testObj }

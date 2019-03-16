@@ -1,6 +1,7 @@
 /* ExecuteRestAPICall.js - Handles API call execution */
 
 import fetch from 'isomorphic-fetch'
+import actionTypes from './ActionTypes'
 import status from './ReduxAsyncStatus'
 
 // TODO: Ensure that pre-processing options can be used for Flask-JWT-Extended
@@ -114,13 +115,13 @@ function getResponseJSON (httpVerb, response) {
 
 /* Redux action for all fetch starts */
 function fetchStart (payload) {
-  return { type: 'async', status: status.START, verb: payload.verb, rimObj: payload.rimObj }
+  return { type: actionTypes.ASYNC, status: status.START, verb: payload.verb, rimObj: payload.rimObj }
 }
 
 /* Redux action for all fetch errors */
 function fetchError (payload, errorMessage) {
   return {
-    type: 'async',
+    type: actionTypes.ASYNC,
     status: status.ERROR,
     verb: payload.verb,
     rimObj: payload.rimObj,
@@ -132,7 +133,7 @@ function fetchError (payload, errorMessage) {
 /* Redux action for all fetch successes */
 function fetchSuccess (payload, receivedData) {
   return {
-    type: 'async',
+    type: actionTypes.ASYNC,
     status: status.SUCCESS,
     verb: payload.verb,
     rimObj: payload.rimObj,
