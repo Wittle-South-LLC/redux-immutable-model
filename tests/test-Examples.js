@@ -58,6 +58,14 @@ describe('Example: User core methods', () => {
   })
 })
 
+describe('Example: Reducer tests', () => {
+  it('Reducing startEdit works', () => {
+    const startState = userService.setById(testObj)
+    const endState= userService.reducer(startState, userService.startEdit(testObj.getId()))
+    chai.expect(userService.getEditingId()).to.equal(testObj.getId())
+  })
+})
+
 describe('Example: Code coverage tests', () => {
   it('Retuns a custom API path if getApiPath function provided in configuration', () => {
     const testConfig = new Configuration()

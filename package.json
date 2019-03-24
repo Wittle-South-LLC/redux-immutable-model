@@ -1,6 +1,6 @@
 {
   "name": "redux-immutable-model",
-  "version": "0.5.1",
+  "version": "0.5.3",
   "description": "A redux-based library to support complex data models with minimal coding",
   "main": "dist/index.js",
   "scripts": {
