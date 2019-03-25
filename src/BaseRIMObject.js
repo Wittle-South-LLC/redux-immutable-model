@@ -61,7 +61,7 @@ export default class BaseRIMObject extends ImmutableInherit {
   }
 
   // RESTful API helper methods, intended to be overridden
-  getFetchPayload (action) {
+  getFetchPayload (verb) {
     return {}
   }
 

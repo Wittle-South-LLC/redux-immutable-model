@@ -17,7 +17,7 @@ export default class BaseRIMService {
     this._state = this.getInitialState()
     this._objectClass = rimClass
     this._defaultCollectionPath = rimClass.name + 's'
-    this._defaultApiPath = rimClass.name + 's'
+    this._defaultApiPath = rimClass.name.toLowerCase() + 's'
     this._defaultStatePath = rimClass.name + 's'
     this.reducer = this.reducer.bind(this)
     this.config = config
@@ -89,7 +89,7 @@ export default class BaseRIMService {
     switch (verb) {
       case this.config.verbs.READ:
       case this.config.verbs.DELETE:
-      case this.config.verbs.UPDATE:
+      case this.config.verbs.SAVE_UPDATE:
         result += '/' + obj.getId()
         break
       case this.config.verbs.SEARCH:
