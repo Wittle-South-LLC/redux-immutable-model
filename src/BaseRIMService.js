@@ -41,7 +41,11 @@ export default class BaseRIMService {
   }
 
   cancelEdit () {
-    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_EDIT }
+    const rimObj = this.getById(this.getEditingId())
+    if (!rimObj) {
+      console.log(`ERROR: unable to find edit object for BaseRIMService object class ${this._objectClass.name}`)
+    }
+    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_EDIT, rimObj }
   }
 
   cancelNew () {
@@ -196,6 +200,10 @@ export default class BaseRIMService {
 
   isCreating () {
     return this._state.hasIn([OBJECT_MAP, this._objectClass._NewID])
+  }
+
+  isEditing () {
+    return this._state.get(EDITING_ID) !== undefined
   }
 
   isFetching (obj) {
