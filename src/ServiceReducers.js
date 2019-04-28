@@ -12,7 +12,7 @@ const reduceCancelEdit = (state, service, action) => {
 
 const reduceCancelNew = (state, service, action) => {
   service.setEditingId(undefined)
-  return service.deleteId(service.getObjectClass()._NewId)
+  return service.deleteId(service.getObjectClass()._NewID)
 }
 
 const reduceCommitDelete = (state, service, action) => {

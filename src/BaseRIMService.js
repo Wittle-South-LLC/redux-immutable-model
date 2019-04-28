@@ -111,6 +111,10 @@ export default class BaseRIMService {
     return this._state.getIn([OBJECT_MAP, id])
   }
 
+  getCreating () {
+    return this._state.getIn([OBJECT_MAP, this._objectClass._NewID])
+  }
+
   getCurrent () {
     return this._state.get(CURRENT_ID)
       ? this.getById(this._state.get(CURRENT_ID))
