@@ -3,6 +3,10 @@
 import { fromJS, List } from 'immutable'    // We will be directly creating immutable objects in search results
 import status from "./ReduxAsyncStatus"     // Defines the possible status values for async calls
 
+const reduceCancelDelete = (state, service, action) => {
+  return service.setDeletingId(undefined)
+}
+
 const reduceCancelEdit = (state, service, action) => {
   const newState = service.setById(state.get(service.constructor._RevertTo))
                           .set(service.constructor._EditingId, undefined)
@@ -35,7 +39,7 @@ const reduceCommitDelete = (state, service, action) => {
       } else {
         delState = delState.setIn([service.constructor._ObjectMap, action.rimObj.getId()],action.rimObj.setFetching(false))
       }
-    return delState
+    return delState.set(service.constructor._DeletingId, undefined)
     /* istanbul ignore next */
     default: return sharedDefaultHandler(state, action)
   }
@@ -192,6 +196,10 @@ const reduceStartEdit = (state, service, action) => {
   return service.setState(newState) 
 }
 
+const reduceStartDelete = (state, service, action) => {
+  return service.setDeletingId(action.id)
+}
+
 // This implementation of start reducing is shared across many verbs
 // All it is going to do is set the fetching indicator on the
 // action.rimObj
@@ -209,6 +217,7 @@ const sharedStartHandler = (service, action) => {
 // All it is going to do is clear the fetching indicator on the
 // action.rimObj; actual error reporting is handled separately
 const sharedErrorHandler = (service, action) => {
+  console.log('sharedErrorHandler: action is ', action)
   /* istanbul ignore next */
   if (process.env.NODE_ENV !== 'production') {
     if (!action.rimObj) {
@@ -248,6 +257,7 @@ const sharedHydrateSuccess = (service, action) => {
 function getDefaultReducers(verbs) {
   return {
     [verbs.CREATE_NEW]: reduceCreateNew,
+    [verbs.CANCEL_DELETE]: reduceCancelDelete,
     [verbs.CANCEL_NEW]: reduceCancelNew,
     [verbs.CANCEL_EDIT]: reduceCancelEdit,
     [verbs.DELETE]: reduceCommitDelete,
@@ -259,6 +269,7 @@ function getDefaultReducers(verbs) {
     [verbs.SAVE_NEW]: reduceSaveNew,
     [verbs.SAVE_UPDATE]: reduceSaveUpdate,
     [verbs.SEARCH]: reduceSearch,
+    [verbs.START_DELETE]: reduceStartDelete,
     [verbs.START_EDIT]: reduceStartEdit
   }
 }

@@ -5,6 +5,7 @@ import actionTypes from './ActionTypes'
 import callAPI from './ExecuteRestAPICall'
 
 const CURRENT_ID = 'CURRENT_ID'
+const DELETING_ID = 'DELETING_ID'
 const EDITING_ID = 'EDITING_ID'
 const ERROR = 'ERROR'
 const OBJECT_MAP = 'OBJECT_MAP'
@@ -25,6 +26,7 @@ export default class BaseRIMService {
 
   static _ObjectMap = OBJECT_MAP
   static _CurrentId = CURRENT_ID
+  static _DeletingId = DELETING_ID
   static _EditingId = EDITING_ID
   static _RevertTo = REVERT_TO
   static _SearchData = SEARCH_DATA
@@ -46,6 +48,14 @@ export default class BaseRIMService {
       console.log(`ERROR: unable to find edit object for BaseRIMService object class ${this._objectClass.name}`)
     }
     return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_EDIT, rimObj }
+  }
+
+  cancelDelete () {
+    const rimObj = this.getById(this.getDeletingId())
+    if (!rimObj) {
+      console.log(`ERROR: unable to find delete objet for BaseRIMService object class ${this._objectClass.name}`)
+    }
+    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_DELETE, rimObj }
   }
 
   cancelNew () {
@@ -125,6 +135,10 @@ export default class BaseRIMService {
     return this._state.get(CURRENT_ID)
   }
 
+  getDeletingId () {
+    return this._state.get(DELETING_ID)
+  }
+
   getEditingId () {
     return this._state.get(EDITING_ID)
   }
@@ -137,6 +151,7 @@ export default class BaseRIMService {
     return new Map({
       [BaseRIMService._ObjectMap]: Map({}),
       [BaseRIMService._CurrentId]: undefined,
+      [BaseRIMService._DeletingId]: undefined,
       [BaseRIMService._EditingId]: undefined,
       [BaseRIMService._RevertTo]: undefined,
       [BaseRIMService._SearchData]: Map({}),
@@ -206,6 +221,10 @@ export default class BaseRIMService {
     return this._state.hasIn([OBJECT_MAP, this._objectClass._NewID])
   }
 
+  isDeleting () {
+    return this._state.get(DELETING_ID) !== undefined
+  }
+
   isEditing () {
     return this._state.get(EDITING_ID) !== undefined
   }
@@ -267,6 +286,10 @@ export default class BaseRIMService {
                                     .setIn([OBJECT_MAP, rimObj.getId()], rimObj))
   }
 
+  setDeletingId (id) {
+    return this.setState(this._state.set(DELETING_ID, id))
+  }
+
   // Set the editing ID for the service
   setEditingId (id) {
     return this.setState(this._state.set(EDITING_ID, id))
@@ -279,6 +302,10 @@ export default class BaseRIMService {
   setState (state) {
     this._state = state
     return state
+  }
+
+  startDelete (id) {
+    return { type: actionTypes.SYNC, verb: this.config.verbs.START_DELETE, id }
   }
 
   startEdit (id) {
