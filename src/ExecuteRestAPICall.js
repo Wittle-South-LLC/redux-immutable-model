@@ -72,9 +72,14 @@ export default function callAPI (service, verb, method, rimObj, nextPath = undef
         })
         .then(json => dispatch(fetchSuccess(payload, json)))
         .catch(error => {
-          error.text().then( errorMessage => {
-            dispatch(fetchError(payload, errorMessage))
-          })
+          console.log('Caught error: ', error)
+          if (error.text && typeof error.text === "funciton") {
+            error.text().then( errorMessage => {
+              dispatch(fetchError(payload, errorMessage))
+            })
+          } else {
+            dispatch(fetchError(payload, error))
+          }
         })
     } else {
       console.log('callAPI for ' + rimObj.constructor.name + 
