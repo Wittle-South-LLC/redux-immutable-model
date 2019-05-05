@@ -18,6 +18,7 @@ export default class BaseRIMService {
     this._state = this.getInitialState()
     this._objectClass = rimClass
     this._defaultCollectionPath = rimClass.name + 's'
+    this.name = rimClass.name + 'Service'
     this._defaultApiPath = rimClass.name.toLowerCase() + 's'
     this._defaultStatePath = rimClass.name + 's'
     this.reducer = this.reducer.bind(this)
@@ -47,7 +48,7 @@ export default class BaseRIMService {
     if (!rimObj) {
       console.log(`ERROR: unable to find edit object for BaseRIMService object class ${this._objectClass.name}`)
     }
-    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_EDIT, rimObj }
+    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_EDIT, serviceName: this.name, rimObj }
   }
 
   cancelDelete () {
@@ -55,11 +56,11 @@ export default class BaseRIMService {
     if (!rimObj) {
       console.log(`ERROR: unable to find delete objet for BaseRIMService object class ${this._objectClass.name}`)
     }
-    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_DELETE, rimObj }
+    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_DELETE, serviceName: this.name, rimObj }
   }
 
   cancelNew () {
-    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_NEW }
+    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_NEW, serviceName: this.name }
   }
 
   clearError() {
@@ -69,7 +70,7 @@ export default class BaseRIMService {
   }
 
   createNew (newPath = undefined) {
-    return { type: actionTypes.SYNC, verb: this.config.verbs.CREATE_NEW, newPath }
+    return { type: actionTypes.SYNC, verb: this.config.verbs.CREATE_NEW, serviceName: this.name, newPath }
   }
 
   deleteId (id) {
@@ -193,6 +194,11 @@ export default class BaseRIMService {
       console.log('BaseRIMService.reducer action is', action)
     }
 
+    // If the action is for a specific service, confirm it is for this one
+    if (action.serviceName && action.serviceName !== this.name) {
+      return state
+    }
+
     // First step, determine if any reducing actions are required
     // - If the action.rimObj class matches the service object
     //   class, we probably have work too
@@ -305,11 +311,11 @@ export default class BaseRIMService {
   }
 
   startDelete (id) {
-    return { type: actionTypes.SYNC, verb: this.config.verbs.START_DELETE, id }
+    return { type: actionTypes.SYNC, verb: this.config.verbs.START_DELETE, serviceName: this.name, id }
   }
 
   startEdit (id) {
-    return { type: actionTypes.SYNC, verb: this.config.verbs.START_EDIT, id }
+    return { type: actionTypes.SYNC, verb: this.config.verbs.START_EDIT, serviceName: this.name, id }
   }
 
   // The object here is to update any properties in the searchObject
