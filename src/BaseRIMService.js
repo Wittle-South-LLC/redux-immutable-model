@@ -23,6 +23,7 @@ export default class BaseRIMService {
     if (rimClass._apiPrefix) {
       this._defaultApiPath = rimClass._apiPrefix + '/' + this.defaultApiPath
     }
+    this._apiPrefix = rimClass._apiPrefix
     this._defaultStatePath = rimClass.name + 's'
     this.reducer = this.reducer.bind(this)
     this.config = config
@@ -99,7 +100,7 @@ export default class BaseRIMService {
     // If the application configuration supplied a method for customizing
     // the API url, try it with this verb & object
     if (this.config.getApiPath) {
-      result = this.config.getApiPath(verb, obj)
+      result = this.config.getApiPath(verb, this._apiPrefix)
     }
     // If the customization yielded a URL, we're done, so return it
     if (result) { return result }

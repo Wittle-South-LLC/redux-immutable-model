@@ -70,7 +70,8 @@ version for tests to run successfully. Example:
 Changelog
 ---------
 
-* 0.5.0 - Fixes #15 - getApiHeaders needs to pass verb as well as headers to allow verb-specific behavior
-* 0.5.1 - Fixes #20 - Adds synchronous actions to start / cancel new and edit workflows
-* 0.5.2 - Fixes #18 - Actions should not require a rimObj
+* 0.5.4-10 - Steps on the path to correct function in a microservice environment with multiple hydrate endpoints
 * 0.5.3 - Fixes bad publish (forgot to build) for 0.5.2
+* 0.5.2 - Fixes #18 - Actions should not require a rimObj
+* 0.5.1 - Fixes #20 - Adds synchronous actions to start / cancel new and edit workflows
+* 0.5.0 - Fixes #15 - getApiHeaders needs to pass verb as well as headers to allow verb-specific behavior
