@@ -62,7 +62,7 @@ const reduceHydrate = (state, service, action) => {
   switch(action.status) {
     case status.START: return sharedStartHandler(service, action)
     case status.ERROR: return sharedErrorHandler(service, action)
-    case status.SUCCESS: return sharedHydrateSuccess(service, action)
+    case status.SUCCESS: return sharedHydrateSuccess(state, service, action)
     /* istanbul ignore next */
     default: return sharedDefaultHandler(state, action)
   }
@@ -73,7 +73,7 @@ const reduceLogin = (state, service, action) => {
     case status.START: return sharedStartHandler(service, action)
     /* istanbul ignore next - same code is covered by hydrate testing */
     case status.ERROR: return sharedErrorHandler(service, action)
-    case status.SUCCESS: return sharedHydrateSuccess(service, action)
+    case status.SUCCESS: return sharedHydrateSuccess(state, service, action)
     /* istanbul ignore next */
     default: return sharedDefaultHandler(state, action)
   }
@@ -241,17 +241,21 @@ const sharedDefaultHandler = (state, action) => {
   return state
 }
 
-const sharedHydrateSuccess = (service, action) => {
-  let newState = service.getInitialState()
+const sharedHydrateSuccess = (state, service, action) => {
   const myClass = service.getObjectClass()
   const items = action.receivedData[service.getApiCollectionPath()]
   /* istanbul ignore else */
   if (items) {
+    // We only initialize state if we got relevant data. If more than
+    // one service is present, hydrate will be called for each service,
+    // and we want to preserve state during events for other services
+    let newState = service.getInitialState()
     for (var i = 0, iLen = items.length; i < iLen; i++) {
       newState = service.setById(new myClass(items[i]))
     }
+    return newState
   }
-  return newState
+  return state
 }
 
 function getDefaultReducers(verbs) {
