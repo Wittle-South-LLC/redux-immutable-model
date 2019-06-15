@@ -20,6 +20,9 @@ export default class BaseRIMService {
     this._defaultCollectionPath = rimClass.name + 's'
     this.name = rimClass.name + 'Service'
     this._defaultApiPath = rimClass.name.toLowerCase() + 's'
+    if (rimClass._apiPrefix) {
+      this._defaultApiPath = rimClass._apiPrefix + '/' + this.defaultApiPath
+    }
     this._defaultStatePath = rimClass.name + 's'
     this.reducer = this.reducer.bind(this)
     this.config = config
