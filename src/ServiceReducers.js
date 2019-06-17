@@ -217,7 +217,7 @@ const sharedStartHandler = (service, action) => {
 // All it is going to do is clear the fetching indicator on the
 // action.rimObj; actual error reporting is handled separately
 const sharedErrorHandler = (service, action) => {
-  console.log('sharedErrorHandler: action is ', action)
+  console.log('redux-immutable-model.sharedErrorHandler: action is ', action)
   /* istanbul ignore next */
   if (process.env.NODE_ENV !== 'production') {
     if (!action.rimObj) {

@@ -72,8 +72,8 @@ export default function callAPI (service, verb, method, rimObj, nextPath = undef
         })
         .then(json => dispatch(fetchSuccess(payload, json)))
         .catch(error => {
-          console.log('Caught error: ', error)
-          if (error.text && typeof error.text === "funciton") {
+          console.log('redux-immutable-model.callAPI: Caught error: ', error)
+          if (error.text && typeof error.text === "function") {
             error.text().then( errorMessage => {
               dispatch(fetchError(payload, errorMessage))
             })
