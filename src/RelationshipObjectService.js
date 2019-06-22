@@ -26,17 +26,18 @@ export default class RelationshipObjectService extends BaseRIMService {
   }
 
   getByIds (id1, id2) {
-    return this.state.hasIn([LEFT_OBJECT_MAP, id1, id2])
-      ? this.state.getIn([LEFT_OBJECT_MAP, id1, id2])
-      : this.state.getIn([RIGHT_OBJECT_MAP, id1, id2])
+    return this._state.hasIn([LEFT_OBJECT_MAP, id1, id2])
+      ? this._state.getIn([LEFT_OBJECT_MAP, id1, id2])
+      : this._state.getIn([RIGHT_OBJECT_MAP, id1, id2])
   }
 
+/*
   getCreating () {
-    const ids = id.split('/')
     return this._state.getIn([LEFT_OBJECT_MAP,
                               this._objectClass._NewLeftID,
                               this._objectClass._NewRightID])
   }
+*/
 
   getInitialState () {
     const result = super.getInitialState()

@@ -61,7 +61,6 @@ const reduceSaveNew = (state, service, action) => {
       // and set the current object to the new ID
       service.delete(action.rimObj)
       service.setEditing(undefined)
-      console.log('newObj = ', newObj.toJS())
       return service.setById(newObj)
     /* istanbul ignore next */
     default: return sharedDefaultHandler(state, action)

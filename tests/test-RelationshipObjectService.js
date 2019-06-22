@@ -31,16 +31,29 @@ const testService = new RelationshipObjectService(RelationshipRIMObject, config)
 
 // Create a test class different than the default for tests that need it
 class testClass extends RelationshipRIMObject {
+  static _apiPrefix = 'tsc'
   constructor(createFrom) { super (createFrom) }
   static getInitialState() { return "Test" }
 }
+// This line is for code coverage
+const tcService = new RelationshipObjectService(testClass, config)
 // Create a new object of the class
 const tcObject = new testClass()
 class testSClass extends SimpleRIMObject {
   static _IdentityKey = 'left_id'
   constructor(createFrom) { super (createFrom) }
 }
+class testRClass extends SimpleRIMObject {
+  static _IdentityKey = 'right_id'
+  constructor(createFrom) { super (createFrom) }
+}
+class testTClass extends SimpleRIMObject {
+  static _IdentityKey = 'coverage_id'
+  constructor(createFrom) { super (createFrom) }
+}
 const tcSObject = new testSClass({left_id: "LeftSimpleRIMObject1"})
+const tcRObject = new testRClass({right_id: "RightSimpleRIMObject1"})
+const tcTObject = new testTClass({coverage_id: 'Cover1'})
 
 describe('RelationshipObjectService collection management functions', () => {
   before(() => {
@@ -49,6 +62,8 @@ describe('RelationshipObjectService collection management functions', () => {
   it('Sets an object by ID and retrieves it by ID', () => {
     testService.setById(testObj)
     chai.expect(testService.getById(testObj.getId())).to.equal(testObj)
+    chai.expect(testService.getByIds(testObj.getLeftId(), testObj.getRightId())).to.equal(testObj)
+    chai.expect(testService.getByIds(testObj.getRightId(), testObj.getLeftId())).to.equal(testObj)
   })
   it('delete() removes object from array', () => {
     testService.delete(testObj)
@@ -60,6 +75,8 @@ describe('RelationshipObjectService collection management functions', () => {
   it('getObjectMap(item) returns expected map containing object', () => {
     testService.setById(testObj)
     chai.expect(testService.getObjectMap(tcSObject).equals(Map({[testObj.getRightId()]: testObj}))).to.be.true
+    chai.expect(testService.getObjectMap(tcRObject).equals(Map({[testObj.getLeftId()]: testObj}))).to.be.true
+    chai.expect(testService.getObjectMap(tcTObject)).to.be.undefined
   })
   it('getObjectArray() returns an array of available objects', () => {
     chai.expect(testService.getObjectArray(tcSObject)).to.eql([testObj])

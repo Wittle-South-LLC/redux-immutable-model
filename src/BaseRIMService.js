@@ -1,5 +1,5 @@
 /* Base RIM Service - Basic service for managing RIM object collections */
-import { Map } from 'immutable'
+import { Map, List } from 'immutable'
 import actionTypes from './ActionTypes'
 import status from './ReduxAsyncStatus'
 import callAPI from './ExecuteRestAPICall'
@@ -64,6 +64,10 @@ export default class BaseRIMService {
     return this._state.has(ERROR)
       ? this.setState(this._state.delete(ERROR))
       : this._state
+  }
+
+  clearSelected (rimObj) {
+    return this.setState(this._state.deleteIn([SELECTED_IDS, rimObj.getId()]))
   }
 
   createNew (newPath = undefined) {
@@ -141,6 +145,7 @@ export default class BaseRIMService {
       [BaseRIMService._DeletingId]: undefined,
       [BaseRIMService._EditingId]: undefined,
       [BaseRIMService._RevertTo]: undefined,
+      [BaseRIMService._SelectedIds]: Map([])
     })
   }
 
@@ -170,6 +175,10 @@ export default class BaseRIMService {
     else /* istanbul ignore next */ if (process.env.NODE_ENV !== 'production') {
       throw new Error(`BaseRIMService: ${this._objectClass.name} isFetching(): invalid argument: `, obj)
     }
+  }
+
+  isSelected (obj) {
+    return this._state.hasIn([BaseRIMService._SelectedIds, obj.getId()])
   }
 
   read (rimObj, nextPath = undefined) {
@@ -247,11 +256,15 @@ export default class BaseRIMService {
   setDeleting (rimObj) {
     return rimObj
       ? this.setState(this._state.set(DELETING_ID, rimObj.getId()))
-      : this._state.set(DELETING_ID, undefined)
+      : this.setState(this._state.set(DELETING_ID, undefined))
   }
 
   setError(message) {
     return this.setState(this._state.set(ERROR, message))
+  }
+
+  setSelected (rimObj) {
+    return this.setState(this._state.setIn([SELECTED_IDS, rimObj.getId()], rimObj))
   }
 
   setState (state) {
@@ -265,5 +278,9 @@ export default class BaseRIMService {
 
   startEdit (rimObj) {
     return { type: actionTypes.SYNC, verb: this.config.verbs.START_EDIT, serviceName: this.name, rimObj }
+  }
+
+  toggleSelected (rimObj) {
+    return { type: actionTypes.SYNC, verb: this.config.verbs.TOGGLE_SELECTED, serviceName: this.name, rimObj }
   }
 }

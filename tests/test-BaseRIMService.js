@@ -48,3 +48,17 @@ describe('BaseRIMService reducer support functions', () => {
     chai.expect(testService.getState()).to.eql(expectedState)
   })
 })
+
+describe('BaseRIMService code coverage tests', () => {
+  before(() => {
+    testService.emptyState()
+  })
+  it('cancelEdit returns event with undefined rim obj if not editing', () => {
+    const myEvent = testService.cancelEdit()
+    chai.expect(myEvent.rimObj).to.be.undefined
+  })
+  it('cancelDelete returns event with undefined rim obj if not editing', () => {
+    const myEvent = testService.cancelDelete()
+    chai.expect(myEvent.rimObj).to.be.undefined
+  })
+})

@@ -17,7 +17,8 @@ const defaultVerbs = {
   SAVE_UPDATE:      'SAVE_UPDATE',      // Update existing object
   SEARCH:           'SEARCH',           // Search for objects
   START_DELETE:     'START_DELETE',     // Starts a two-phase delete
-  START_EDIT:       'START_EDIT'        // Start an editing operation
+  START_EDIT:       'START_EDIT',       // Start an editing operation
+  TOGGLE_SELECTED:  'TOGGLE_SELECTED'   // Toggle whether the ID is selected
 }
 
 export default defaultVerbs

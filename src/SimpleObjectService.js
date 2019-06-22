@@ -29,9 +29,11 @@ export default class SimpleObjectService extends BaseRIMService {
     return this._state.getIn([OBJECT_MAP, id])
   }
 
+/*
   getCreating () {
     return this._state.getIn([OBJECT_MAP, this._objectClass._NewID])
   }
+*/
 
   getInitialState () {
     const result = super.getInitialState()

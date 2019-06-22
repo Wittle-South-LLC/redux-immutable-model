@@ -155,11 +155,37 @@ describe('SimpleObjectService: Direct reducer tests', () => {
     testService.emptyState()
     testService.setById(testObj)
   })
+  it('reduceToggleSelect() updates state correctly', () => {
+    const reduceToggleSelect = config.getSimpleReducer(defaultVerbs.TOGGLE_SELECTED)
+    const tsEvent = testService.toggleSelected(testObj)
+    reduceToggleSelect(testService.getState(), testService, tsEvent)
+    chai.expect(testService.isSelected(testObj)).to.be.true
+    reduceToggleSelect(testService.getState(), testService, tsEvent)
+    chai.expect(testService.isSelected(testObj)).to.be.false
+  })
+  it('reduceStartDelete() updates state correctly', () => {
+    const reduceStartDelete = config.getSimpleReducer(defaultVerbs.START_DELETE)
+    const sdEvent = testService.startDelete(testObj)
+    reduceStartDelete(testService.getState(), testService, sdEvent)
+    chai.expect(testService.getDeleting()).to.equal(testObj)
+  })
+  it('reduceCancelDelete() updates state correctly', () => {
+    // Set start state to what it would be during an edit
+    chai.expect(testService.isDeleting()).to.be.false
+    testService.setDeleting(testObj)
+    chai.expect(testService.isDeleting()).to.be.true
+    const reduceCancelDelete = config.getSimpleReducer(defaultVerbs.CANCEL_DELETE)
+    const cdEvent = testService.cancelDelete()
+    reduceCancelDelete(testService.getState(), testService, cdEvent)
+    chai.expect(testService.getDeleting()).to.equal(undefined)
+  })
   it('reduceStartEdit() updates state correctly', () => {
+    chai.expect(testService.isEditing()).to.be.false
     const reduceStartEdit = config.getSimpleReducer(defaultVerbs.START_EDIT)
     const seEvent = testService.startEdit(testObj)
     reduceStartEdit(testService.getState(), testService, seEvent)
     chai.expect(testService.getEditing()).to.equal(testObj)
+    chai.expect(testService.isEditing()).to.be.true
     chai.expect(testService.getState().get(SimpleObjectService._RevertTo)).to.equal(testObj)
   })
   it('reduceEdit() updates state correctly', () => {

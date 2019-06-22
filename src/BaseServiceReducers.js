@@ -3,7 +3,7 @@
 import status from "./ReduxAsyncStatus"     // Defines the possible status values for async calls
 
 const reduceCancelDelete = (state, service, action) => {
-  return service.setDeletingId(undefined)
+  return service.setDeleting(undefined)
 }
 
 const reduceCancelEdit = (state, service, action) => {
@@ -84,13 +84,19 @@ const reduceRead = (state, service, action) => {
 }
 
 const reduceStartDelete = (state, service, action) => {
-  return service.setDeletingId(action.rimObj)
+  return service.setDeleting(action.rimObj)
 }
 
 const reduceStartEdit = (state, service, action) => {
   const newState = service.setEditing(action.rimObj)
                           .set(service.constructor._RevertTo, action.rimObj)
   return service.setState(newState) 
+}
+
+const reduceToggleSelected = (state, service, action) => {
+  return service.isSelected(action.rimObj)
+    ? service.clearSelected(action.rimObj)
+    : service.setSelected(action.rimObj)
 }
 
 // This implementation of start reducing is shared across many verbs
@@ -163,6 +169,7 @@ export function getBaseReducers(verbs) {
     [verbs.LOGOUT]: reduceLogout,
     [verbs.READ]: reduceRead,
     [verbs.START_DELETE]: reduceStartDelete,
-    [verbs.START_EDIT]: reduceStartEdit
+    [verbs.START_EDIT]: reduceStartEdit,
+    [verbs.TOGGLE_SELECTED]: reduceToggleSelected
   }
 }
