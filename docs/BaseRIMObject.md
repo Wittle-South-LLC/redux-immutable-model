@@ -8,14 +8,13 @@ RESTful APIs.
 
 Assumptions
 -----------
-1) Every instance of every data model object has an ID that is unique
-2) When creating a new instance of a data model object, the application will
+1) When creating a new instance of a data model object, the application will
    need a client-side representation of an instance that can be manipulated to
    achieve a minimum level of completeness before persistence to the server.
    Such an object instance is *new*, and will have a temporary client-generated
    ID. When sufficiently complete, it will be saved / persisted, and the server
    will respond with a permanent ID for the instance.
-3) When editing an instance of an existing data model object, there may be
+2) When editing an instance of an existing data model object, there may be
    multiple interactions between the application and the user before changes
    are complete and ready to be persisted. Once the first change is made to
    an instance, the instance should be marked *dirty*, indicating the instance
@@ -23,7 +22,7 @@ Assumptions
    changes are complete, the instance will be saved / persisted, and the
    instance becomes no longer dirty. Instances that are not dirty cannot
    have a save / persist action executed on them, as there is no need.
-4) Any RESTful API call is asynchronous, and during the execution of a
+3) Any RESTful API call is asynchronous, and during the execution of a
    RESTful API call that involves an instance, no additional RESTful API
    calls involving the instance should be initiated. When a RESTful API call
    is initiated on an instance, it should be marked *fetching*, and once the
@@ -74,6 +73,5 @@ These are convenience methods that are likely to be shared across most
 data model implementations. (Yes, like many other frameworks, this one
 is a bit opinionated in a few spots.)
 
-* getId() - Returns the unique identifier for this object
 * getCreated() - Returns the creation date for this object
 * getUpdated() - Returns the last updated date for this object

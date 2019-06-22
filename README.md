@@ -34,11 +34,16 @@ Integration Classes
 
 These classes will be directly accessed by any application using this frameowrk.
 
-* BaseRIMObject - Implements shared functionality for data model objects, e.g.
+* SimpleRIMObject - Implements shared functionality for data model objects, e.g.
   tracking client state relative to persisted state (isDirty, isNew, ...). See
-  [here](docs/BaseRIMObject.md) for more details.
-* BaseRIMService - Provides collection management and API interaction for a
-  a data model component. See [here](docs/BaseRIMService.md) for more details.
+  [here](docs/SimpleRIMObject.md) for more details.
+* RelationshipRIMObject - Implements shared functionality for relationships
+  between data model objects. See [here](docs/RelationshipRIMObject.md) for
+  more details.
+* SimpleObjectService - Provides collection management and API interaction for a
+  a data model component. See [here](docs/SimpleObjectService.md) for more details.
+* RelationshipObjectService - Provides collection management and API interaction for a
+  a data model component. See [here](docs/RelationshipObjectService.md) for more details.
 * Configuration - Provides applications the ability to customize behavior of
   this framework as needed for different types of integrations. See
   [here](docs/Configuration.md) for more details.
@@ -70,6 +75,9 @@ version for tests to run successfully. Example:
 Changelog
 ---------
 
+* 0.6.0 - Breaking change introducing relationship objects, and refactoring support for
+  simple object. Standardizes Get/Set methods, also adds tracking a selected set. Any code
+  based on prior versions will require changes.
 * 0.5.4-11 - Steps on the path to correct function in a microservice environment with multiple hydrate endpoints
 * 0.5.3 - Fixes bad publish (forgot to build) for 0.5.2
 * 0.5.2 - Fixes #18 - Actions should not require a rimObj
