@@ -1,11 +1,11 @@
 /* User.js - Example subclass of BaseRIMObject */
-import BaseRIMObject from '../src/BaseRIMObject'
+import SimpleRIMObject from '../src/SimpleRIMObject'
 import defaultVerbs from '../src/ReduxVerbs'
 
 // Simple example of a User domain object. For example purposes,
 // assume password is only provided to the server during user creation,
 // and user preferences (AppData) are provided only on update
-export default class User extends BaseRIMObject {
+export default class User extends SimpleRIMObject {
   // Overriding key static elements from BaseRIMObject
   static _IdentityKey = 'user_id'
 

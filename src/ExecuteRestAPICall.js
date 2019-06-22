@@ -31,7 +31,7 @@ export default function callAPI (service, verb, method, rimObj, nextPath = undef
     /* istanbul ignore else - Code is unreachable by design */
     if (!service.isFetching(rimObj)) {
       let payload = {
-        apiUrl: service.getFetchURL() + service.getApiPath(verb, rimObj),
+        apiUrl: service.config.getFetchURL() + service.getApiPath(verb, rimObj),
         method,
         verb,
         nextPath,
@@ -47,7 +47,7 @@ export default function callAPI (service, verb, method, rimObj, nextPath = undef
       }
 
       // If function to customize headers exists, call it on the standard headers 
-      const requestHeaders = service.applyHeaders(verb, getApiHeaders(payload))
+      const requestHeaders = service.config.applyHeaders(verb, getApiHeaders(payload))
 
       // Update state indicating fetch has started
       /* istanbul ignore if - development only functionality */
@@ -64,7 +64,7 @@ export default function callAPI (service, verb, method, rimObj, nextPath = undef
             if (process.env.NODE_ENV !== 'production' && process.env.DEBUG_LEVEL >= 2) {
               console.log('fetchRIMObject: response recieved:', response)
             }
-            response = service.preProcessResponse(response)
+            response = service.config.preProcessResponse(response)
 
             // Call function that will get the response JSON or
             // throw an exception if the response is not OK

@@ -59,11 +59,6 @@ describe('BaseRIMObject Core Functions', () => {
     const testNew = testObj.setNew(testObj.isNew())
     chai.expect(testNew.hashCode()).to.equal(testObj.hashCode())
   })
-  it('Gets ID if present, newID if not', () => {
-    chai.expect(testObj.getId()).to.equal(TEST_ID)
-    const noIdObject = new BaseRIMObject()
-    chai.expect(noIdObject.getId()).to.equal(BaseRIMObject._NewID)
-  })
   it('Gets created if present, undefined if not', () => {
     chai.expect(testObj.getCreated()).to.equal(TEST_CREATED)
     const noCreatedObject = new BaseRIMObject()
@@ -96,19 +91,5 @@ describe('BaseRIMObject Core Functions', () => {
     const startObj = new BaseRIMObject({preferences: {key: "value"}})
     const updatedObj = startObj.updateField(['preferences', 'key'], "value2")
     chai.expect(updatedObj.getData().getIn(['preferences', 'key'])).to.equal("value2")
-  })
-  it('Convenience getters return undefined if subclass clears keys', () => {
-    class CoverageTest extends BaseRIMObject {
-      static _IdentityKey = undefined
-      static _CreatedKey = undefined
-      static _UpdatedKey = undefined
-      constructor(startFrom) {
-        super(startFrom)
-      }
-    }
-    const testObj = new CoverageTest({key: "value"})
-    chai.expect(testObj.getId()).to.equal(undefined)
-    chai.expect(testObj.getCreated()).to.equal(undefined)
-    chai.expect(testObj.getUpdated()).to.equal(undefined)
   })
 })

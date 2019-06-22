@@ -11,12 +11,8 @@ export default class BaseRIMObject extends ImmutableInherit {
 
   // These should be populated by subclasses
   // Default keys int
-  static _IdentityKey = "ID"
   static _CreatedKey = "record_created"
   static _UpdatedKey = "record_updated"
-
-  // Most likely not updated by subclasses
-  static _NewID = 'newRIMObject'
 
   constructor(createFrom, dirtyVal = false, fetchingVal = false, newVal = false) {
     super(createFrom)
@@ -25,9 +21,6 @@ export default class BaseRIMObject extends ImmutableInherit {
     this._new = newVal
     if (createFrom) {
       this._data = createFrom instanceof Map ? createFrom : fromJS(createFrom)
-    }
-    if (this.getId() === undefined) {
-      this._data = this._data.set(this.constructor._IdentityKey, this.constructor._NewID)
     }
   }
 
@@ -38,13 +31,6 @@ export default class BaseRIMObject extends ImmutableInherit {
 
   // Convenience methods assuming relevant values are at the root of the
   // _data member
-  getId () {
-    if (this.constructor._IdentityKey) {
-      return this._data.get(this.constructor._IdentityKey)
-    } else {
-      return undefined
-    }
-  }
   getCreated () {
     if (this.constructor._CreatedKey) {
       return this._data.get(this.constructor._CreatedKey)

@@ -1,4 +1,4 @@
-/* test-BaseRIMObject.js - Unit tests for core BaseRIMObject functions */
+/* test-Examples.js - Unit tests for example redux-immutable-object features */
 
 import { describe, it } from 'mocha'
 import chai from 'chai'
@@ -7,7 +7,7 @@ import thunkMiddleware from 'redux-thunk'
 import { createStore, applyMiddleware } from 'redux'
 import { testAsync } from './TestUtils'
 import Configuration from '../src/Configuration'
-import BaseRIMService from '../src/BaseRIMService'
+import SimpleObjectService from '../src/SimpleObjectService'
 import User from '../examples/User'
 
 const testData = {
@@ -19,8 +19,7 @@ const testData = {
 }
 const testObj = new User(testData)
 const config = new Configuration()
-const userService = new BaseRIMService(User, config)
-
+const userService = new SimpleObjectService(User, config)
 describe('Example: User core methods', () => {
   it('getID() returns ID', () => {
     chai.expect(testObj.getId()).to.equal('UserID_1')
@@ -61,8 +60,8 @@ describe('Example: User core methods', () => {
 describe('Example: Reducer tests', () => {
   it('Reducing startEdit works', () => {
     const startState = userService.setById(testObj)
-    const endState= userService.reducer(startState, userService.startEdit(testObj.getId()))
-    chai.expect(userService.getEditingId()).to.equal(testObj.getId())
+    const endState= userService.reducer(startState, userService.startEdit(testObj))
+    chai.expect(userService.getEditing()).to.equal(testObj)
   })
 })
 
@@ -70,7 +69,7 @@ describe('Example: Code coverage tests', () => {
   it('Retuns a custom API path if getApiPath function provided in configuration', () => {
     const testConfig = new Configuration()
     testConfig.setGetApiPath(() => "Testing")
-    const testService = new BaseRIMService(User, testConfig)
+    const testService = new SimpleObjectService(User, testConfig)
     chai.expect(testService.getApiPath(config.verbs.SAVE_NEW, testObj)).to.equal("Testing")
   })
   it('Configuration setters work correctly', () => {
@@ -86,8 +85,8 @@ describe('Example: Code coverage tests', () => {
   })
   it('Adds verbs correctly', () => {
     const testConfig = new Configuration()
-    testConfig.addVerb('VERB_TEST', () => "Testing")
-    chai.expect(testConfig.reducers['VERB_TEST']()).to.equal("Testing")
+    testConfig.addVerb('VERB_TEST', () => "Testing", 'simple')
+    chai.expect(testConfig.simpleReducers['VERB_TEST']()).to.equal("Testing")
   })
 })
 

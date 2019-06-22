@@ -1,19 +1,25 @@
 /* Base RIM Service - Basic service for managing RIM object collections */
-import { List, Map, fromJS } from 'immutable'
-import status from './ReduxAsyncStatus'
+import { Map } from 'immutable'
 import actionTypes from './ActionTypes'
+import status from './ReduxAsyncStatus'
 import callAPI from './ExecuteRestAPICall'
 
 const CURRENT_ID = 'CURRENT_ID'
 const DELETING_ID = 'DELETING_ID'
 const EDITING_ID = 'EDITING_ID'
+const SELECTED_IDS = 'SELECTED_IDS'
 const ERROR = 'ERROR'
-const OBJECT_MAP = 'OBJECT_MAP'
 const REVERT_TO = 'REVERT_TO'
-const SEARCH_DATA = 'SEARCH_DATA'
-const SEARCH_RESULTS = 'SEARCH_RESULTS'
 
 export default class BaseRIMService {
+
+  static _CurrentId = CURRENT_ID
+  static _DeletingId = DELETING_ID
+  static _EditingId = EDITING_ID
+  static _SelectedIds = SELECTED_IDS
+  static _RevertTo = REVERT_TO
+  static _Error = ERROR
+
   constructor(rimClass, config) {
     this._state = this.getInitialState()
     this._objectClass = rimClass
@@ -29,42 +35,29 @@ export default class BaseRIMService {
     this.config = config
   }
 
-  static _ObjectMap = OBJECT_MAP
-  static _CurrentId = CURRENT_ID
-  static _DeletingId = DELETING_ID
-  static _EditingId = EDITING_ID
-  static _RevertTo = REVERT_TO
-  static _SearchData = SEARCH_DATA
-  static _SearchResults = SEARCH_RESULTS
-  static _Error = ERROR
-
   // Override to customize behavior after logout
   afterLogoutSuccess (state) {
     return state
   }
 
-  applyHeaders(verb, headers) {
-    return this.config.applyHeaders(verb, headers)
-  }
-
-  cancelEdit () {
-    const rimObj = this.getById(this.getEditingId())
-    if (!rimObj) {
-      console.log(`ERROR: unable to find edit object for BaseRIMService object class ${this._objectClass.name}`)
-    }
-    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_EDIT, serviceName: this.name, rimObj }
-  }
-
   cancelDelete () {
-    const rimObj = this.getById(this.getDeletingId())
+    const rimObj = this.getDeleting()
     if (!rimObj) {
       console.log(`ERROR: unable to find delete objet for BaseRIMService object class ${this._objectClass.name}`)
     }
     return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_DELETE, serviceName: this.name, rimObj }
   }
 
-  cancelNew () {
-    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_NEW, serviceName: this.name }
+  cancelEdit () {
+    const rimObj = this.getEditing()
+    if (!rimObj) {
+      console.log(`ERROR: unable to find edit object for BaseRIMService object class ${this._objectClass.name}`)
+    }
+    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_EDIT, serviceName: this.name, rimObj }
+  }
+
+  cancelNew (rimObj) {
+    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_NEW, serviceName: this.name, rimObj }
   }
 
   clearError() {
@@ -77,10 +70,12 @@ export default class BaseRIMService {
     return { type: actionTypes.SYNC, verb: this.config.verbs.CREATE_NEW, serviceName: this.name, newPath }
   }
 
-  deleteId (id) {
-    return this._state.get(CURRENT_ID) === id
-      ? this.setState(this._state.deleteIn([OBJECT_MAP, id]).set(CURRENT_ID, undefined))
-      : this.setState(this._state.deleteIn([OBJECT_MAP, id]))
+  // This method must be overridden in child classes because it is not returning
+  // the results as 'this.setState()'
+  delete (rimObj) {
+    return this._state.get(CURRENT_ID) === rimObj.getId()
+      ? this._state.set(CURRENT_ID, undefined)
+      : this._state
   }
 
   editField (fieldName, fieldValue, rimObj) {
@@ -122,62 +117,35 @@ export default class BaseRIMService {
     return result
   }
 
-  getById (id) {
-    return this._state.getIn([OBJECT_MAP, id])
-  }
-
-  getCreating () {
-    return this._state.getIn([OBJECT_MAP, this._objectClass._NewID])
-  }
-
   getCurrent () {
     return this._state.get(CURRENT_ID)
       ? this.getById(this._state.get(CURRENT_ID))
       : undefined
   }
 
-  getCurrentId () {
-    return this._state.get(CURRENT_ID)
-  }
-
-  getDeletingId () {
+  getDeleting () {
     return this._state.get(DELETING_ID)
+      ? this.getById(this._state.get(DELETING_ID))
+      : undefined
   }
 
-  getEditingId () {
+  getEditing () {
     return this._state.get(EDITING_ID)
-  }
-
-  getFetchURL () {
-    return this.config.getFetchURL()
+      ? this.getById(this._state.get(EDITING_ID))
+      : undefined
   }
 
   getInitialState () {
     return new Map({
-      [BaseRIMService._ObjectMap]: Map({}),
       [BaseRIMService._CurrentId]: undefined,
       [BaseRIMService._DeletingId]: undefined,
       [BaseRIMService._EditingId]: undefined,
       [BaseRIMService._RevertTo]: undefined,
-      [BaseRIMService._SearchData]: Map({}),
-      [BaseRIMService._SearchResults]: List([])
     })
   }
 
   getObjectClass () {
     return this._objectClass
-  }
-
-  getObjectMap () {
-    return this._state.get(OBJECT_MAP)
-  }
-
-  getObjectArray () {
-    return this._state.get(OBJECT_MAP).toList().toArray()
-  }
-
-  getSearchResults () {
-    return this._state.get(SEARCH_RESULTS).toArray()
   }
 
   // Get the current state
@@ -187,6 +155,25 @@ export default class BaseRIMService {
 
   getStatePath () {
     return this._defaultStatePath
+  }
+
+  isDeleting () {
+    return this._state.get(DELETING_ID) !== undefined
+  }
+
+  isEditing () {
+    return this._state.get(EDITING_ID) !== undefined
+  }
+
+  isFetching (obj) {
+    if (obj.isFetching) { return obj.isFetching() }
+    else /* istanbul ignore next */ if (process.env.NODE_ENV !== 'production') {
+      throw new Error(`BaseRIMService: ${this._objectClass.name} isFetching(): invalid argument: `, obj)
+    }
+  }
+
+  read (rimObj, nextPath = undefined) {
+    return callAPI(this, this.config.verbs.READ, 'GET', rimObj, nextPath)
   }
 
   reducer (state = this._objectClass.getInitialState
@@ -218,46 +205,13 @@ export default class BaseRIMService {
 
     // If the verb for this action is not in serviceReducers,
     // we also have no work, so return state
-    if (!this.config.getReducer(action.verb)) {
+    if (!this.getReducer(action.verb)) {
       return state
     }
 
     // OK, there is a serviceReducers for this action, and the
     // action affects this service, so let's reduce it
-    return this.setState(this.config.getReducer(action.verb)(state, this, action))
-  }
-
-  isCreating () {
-    return this._state.hasIn([OBJECT_MAP, this._objectClass._NewID])
-  }
-
-  isDeleting () {
-    return this._state.get(DELETING_ID) !== undefined
-  }
-
-  isEditing () {
-    return this._state.get(EDITING_ID) !== undefined
-  }
-
-  isFetching (obj) {
-    if (typeof obj === "string") {
-      // This use case is for the search action, which does not require a RIMObject
-      // If a search is in flight from this service, the SEARCH_DATA map will have
-      // a fetching property
-      return this._state.hasIn([SEARCH_DATA, 'fetching'])
-    }
-    else /* istanbul ignore next */ if (obj.isFetching) { return obj.isFetching() }
-    else /* istanbul ignore next */ if (process.env.NODE_ENV !== 'production') {
-      throw new Error(`BaseRIMService: ${this._objectClass.name} isFetching(): invalid argument: `, obj)
-    }
-  }
-
-  preProcessResponse (response) {
-    return this.config.preProcessResponse(response)
-  }
-
-  read (rimObj, nextPath = undefined) {
-    return callAPI(this, this.config.verbs.READ, 'GET', rimObj, nextPath)
+    return this.setState(this.getReducer(action.verb)(state, this, action))
   }
 
   saveNew (rimObj, nextPath = undefined) {
@@ -276,33 +230,24 @@ export default class BaseRIMService {
     return callAPI(this, this.config.verbs.SEARCH, 'GET', searchText, nextPath)
   }
 
-  setById (rimObj) {
-    return this.setState(this._state.setIn([OBJECT_MAP, rimObj.getId()], rimObj))
-  }
-
-  // Set the given object as current
+  // Set the given object as current - must be overridden by child classes
+  // to update the object in the collection as well as the current ID indicator
   setCurrent (rimObj) {
-    return this.setState(this._state.set(CURRENT_ID, rimObj.getId())
-                                    .setIn([OBJECT_MAP, rimObj.getId()], rimObj))
+    return this._state.set(CURRENT_ID, rimObj.getId())
   }
 
-  // Set the current ID for the service
-  setCurrentId (id) {
-    return this.setState(this._state.set(CURRENT_ID, id))
-  }
-
+  // Set the given object as editing - must be overridden by child classes
+  // to update the object in the collection as well as the editing ID indicator
   setEditing (rimObj) {
-    return this.setState(this._state.set(EDITING_ID, rimObj.getId())
-                                    .setIn([OBJECT_MAP, rimObj.getId()], rimObj))
+    return rimObj
+      ? this._state.set(EDITING_ID, rimObj.getId())
+      : this._state.set(EDITING_ID, undefined)
   }
 
-  setDeletingId (id) {
-    return this.setState(this._state.set(DELETING_ID, id))
-  }
-
-  // Set the editing ID for the service
-  setEditingId (id) {
-    return this.setState(this._state.set(EDITING_ID, id))
+  setDeleting (rimObj) {
+    return rimObj
+      ? this.setState(this._state.set(DELETING_ID, rimObj.getId()))
+      : this._state.set(DELETING_ID, undefined)
   }
 
   setError(message) {
@@ -314,25 +259,11 @@ export default class BaseRIMService {
     return state
   }
 
-  startDelete (id) {
-    return { type: actionTypes.SYNC, verb: this.config.verbs.START_DELETE, serviceName: this.name, id }
+  startDelete (rimObj) {
+    return { type: actionTypes.SYNC, verb: this.config.verbs.START_DELETE, serviceName: this.name, rimObj }
   }
 
-  startEdit (id) {
-    return { type: actionTypes.SYNC, verb: this.config.verbs.START_EDIT, serviceName: this.name, id }
-  }
-
-  // The object here is to update any properties in the searchObject
-  // that were changed in the rimObject during an update to rimObject
-  updateSearchObject(searchObject, rimObject) {
-    const jsSearchObject = searchObject.toJS()
-    const jsRIMObject = rimObject.getData().toJS()
-    for (var prop in jsSearchObject) {
-      /* istanbul ignore else */
-      if (jsSearchObject.hasOwnProperty(prop) && prop in jsRIMObject) {
-        jsSearchObject[prop] = jsRIMObject[prop]
-      }
-    }
-    return fromJS(jsRIMObject)
+  startEdit (rimObj) {
+    return { type: actionTypes.SYNC, verb: this.config.verbs.START_EDIT, serviceName: this.name, rimObj }
   }
 }

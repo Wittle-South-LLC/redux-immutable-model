@@ -1,7 +1,8 @@
 /* Configuration.js - Configuration object for redux-immutable-model */
 
 import defaultVerbs from './ReduxVerbs'
-import getDefaultReducers from './ServiceReducers'
+import getSimpleReducers from './SimpleServiceReducers'
+import getRelationshipReducers from './RelationshipServiceReducers'
 
 class Configuration {
   constructor() {
@@ -11,7 +12,8 @@ class Configuration {
       [this.verbs.LOGOUT]: true,
       [this.verbs.HYDRATE]: true
     }
-    this.reducers = getDefaultReducers(this.verbs)
+    this.simpleReducers = getSimpleReducers(this.verbs)
+    this.relationshipReducers = getRelationshipReducers(this.verbs)
     this.getFetchURL = () => process.env.API_PATH ? process.env.API_PATH : process.env.REACT_APP_API_PATH
     this.applyHeaders = (verb, headers) => headers
     this.preProcessResponse = (response) => response
@@ -19,13 +21,21 @@ class Configuration {
     this.getApiPath = undefined
   }
 
-  addVerb(verb, reducer) {
+  addVerb(verb, reducer, type) {
     this.verbs[verb] = verb
-    this.reducers[verb] = reducer
+    if (type === 'simple') {
+      this.simpleReducers[verb] = reducer
+    } else if (type === 'relationship') {
+      this.relationshipReducers[verb] = reducer
+    }
   }
 
-  getReducer(verb) {
-    return this.reducers[verb]
+  getRelationshipReducer(verb) {
+    return this.relationshipReducers[verb]
+  }
+
+  getSimpleReducer(verb) {
+    return this.simpleReducers[verb]
   }
 
   // Override default getFetchURL function that returns the value of
