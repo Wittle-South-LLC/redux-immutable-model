@@ -34,6 +34,7 @@ export default function callAPI (service, verb, method, rimObj, nextPath = undef
         apiUrl: service.config.getFetchURL() + service.getApiPath(verb, rimObj),
         method,
         verb,
+        serviceName: service.name,
         nextPath,
         rimObj
       }

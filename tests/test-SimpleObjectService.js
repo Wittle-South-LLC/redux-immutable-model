@@ -223,7 +223,7 @@ describe('SimpleObjectService: Direct reducer tests', () => {
   })
   it('reduceHydrate() updates state correctly', () => {
     const reduceHydrate = config.getSimpleReducer(defaultVerbs.HYDRATE)
-    const startEvent = { verb: defaultVerbs.HYDRATE, status: status.START, rimObj: testObj }
+    const startEvent = { verb: defaultVerbs.HYDRATE, status: status.START, serviceName: testService.name, rimObj: testObj }
     reduceHydrate(testService.getState(), testService, startEvent)
     chai.expect(testService.getById(testObj.getId()).isFetching()).to.be.true
     const receivedData = {
@@ -233,13 +233,13 @@ describe('SimpleObjectService: Direct reducer tests', () => {
         { ID: 'Object3', record_created: 'Date3'}
       ]
     }
-    const successEvent = { verb: defaultVerbs.HYDRATE, status: status.SUCCESS, rimObj: testObj, receivedData }
+    const successEvent = { verb: defaultVerbs.HYDRATE, status: status.SUCCESS, serviceName: testService.name, rimObj: testObj, receivedData }
     reduceHydrate(testService.getState(), testService, successEvent)
     chai.expect(testService.getById('Object1').getCreated()).to.equal('Date1')
   })
   it('reduceLogin() updates state correctly', () => {
     const reduceLogin = config.getSimpleReducer(defaultVerbs.LOGIN)
-    const startEvent = { verb: defaultVerbs.LOGIN, status: status.START, rimObj: testObj }
+    const startEvent = { verb: defaultVerbs.LOGIN, status: status.START, serviceName: testService.name, rimObj: testObj }
     reduceLogin(testService.getState(), testService, startEvent)
     chai.expect(testService.getById(testObj.getId()).isFetching()).to.be.true
     const receivedData = {
@@ -249,7 +249,7 @@ describe('SimpleObjectService: Direct reducer tests', () => {
         { ID: 'Object3', record_created: 'Date3'}
       ]
     }
-    const successEvent = { verb: defaultVerbs.LOGIN, status: status.SUCCESS, rimObj: testObj, receivedData }
+    const successEvent = { verb: defaultVerbs.LOGIN, status: status.SUCCESS, serviceName: testService.name, rimObj: testObj, receivedData }
     reduceLogin(testService.getState(), testService, successEvent)
     chai.expect(testService.getById('Object1').getCreated()).to.equal('Date1')
   })

@@ -162,6 +162,10 @@ export default class BaseRIMService {
     return this._defaultStatePath
   }
 
+  hydrate (rimObj, nextPath = undefined) {
+    return callAPI(this, this.config.verbs.HYDRATE, 'GET', rimObj, nextPath)
+  }
+
   isDeleting () {
     return this._state.get(DELETING_ID) !== undefined
   }
@@ -194,8 +198,8 @@ export default class BaseRIMService {
       console.log('BaseRIMService.reducer action is', action)
     }
 
-    // If the action is for a specific service, confirm it is for this one
-    if (action.serviceName && action.serviceName !== this.name) {
+    // If the action is a SYNC action for a specific service, confirm it is for this one
+    if (action.type === actionTypes.SYNC && action.serviceName && action.serviceName !== this.name) {
       return state
     }
 
