@@ -83,5 +83,8 @@
     ],
     "sourceMap": false,
     "instrument": false
+  },
+  "publishConfig":{
+    "registry": "http://npm.wittlesouth.local"
   }
 }

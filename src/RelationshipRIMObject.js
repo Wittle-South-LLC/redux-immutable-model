@@ -4,7 +4,7 @@ import BaseRIMObject from './BaseRIMObject'
 export default class RelationshipRIMObject extends BaseRIMObject {
 
   // Most likely overridden by subclasses
-  static _IdentityKey = "left_id/right_id"
+//  static _IdentityKey = "left_id/right_id"
   static _NewID = "new_left_id/new_right_id"
   static _NewLeftID = "new_left_id"
   static _NewRightID = "new_right_id"
