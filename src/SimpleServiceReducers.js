@@ -93,6 +93,7 @@ const reduceSaveUpdate = (state, service, action) => {
 }
 
 const reduceSearch = (state, service, action) => {
+  if (action.serviceName !== service.name) return state
   switch(action.status) {
     case status.START:
       let newState = service.clearError()

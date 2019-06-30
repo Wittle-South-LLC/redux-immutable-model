@@ -271,8 +271,14 @@ describe('SimpleObjectService: Direct reducer tests', () => {
     // We need a start state
     const reduceSearch = config.getSimpleReducer(defaultVerbs.SEARCH)
     const startState = testService.getState().setIn([SimpleObjectService._SearchData, 'fetching'], true)
-    const errorEvent = { verb: defaultVerbs.SEARCH, status: status.ERROR, rimObj: "Nothing", errorMessage: "Error" }
-    const successEvent = { verb: defaultVerbs.SEARCH, status: status.START, rimObj: "Nothing" }
+    const errorEvent = {
+      verb: defaultVerbs.SEARCH,
+      serviceName: testService.name,
+      status: status.ERROR,
+      rimObj: "Nothing",
+      errorMessage: "Error"
+    }
+    const successEvent = { verb: defaultVerbs.SEARCH, serviceName: testService.name, status: status.START, rimObj: "Nothing" }
     const errorState = reduceSearch(startState, testService, errorEvent)
     chai.expect(errorState.hasIn([SimpleObjectService._SearchData, 'fetching'])).to.be.false
     chai.expect(errorState.has(SimpleObjectService._Error)).to.be.true
