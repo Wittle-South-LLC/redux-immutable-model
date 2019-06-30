@@ -144,7 +144,7 @@ const sharedHydrateSuccess = (state, service, action) => {
   const myClass = service.getObjectClass()
   const items = action.receivedData[service.getApiCollectionPath()]
   /* istanbul ignore else */
-  if (action.serviceName === service.name) {
+  if (items) {
     // We only initialize state if we got relevant data. If more than
     // one service is present, hydrate will be called for each service,
     // and we want to preserve state during events for other services
@@ -154,7 +154,7 @@ const sharedHydrateSuccess = (state, service, action) => {
     }
     return newState
   } else {
-    console.log(`Skipping hydrate reduce because ${action.serviceName} is not ${service.name}`)
+    console.log(`Skipping hydrate reduce because ${service.name} received no items`)
   }
   return state
 }
