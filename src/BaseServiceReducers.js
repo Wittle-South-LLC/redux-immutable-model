@@ -153,8 +153,6 @@ const sharedHydrateSuccess = (state, service, action) => {
       newState = service.setById(new myClass(items[i]))
     }
     return newState
-  } else {
-    console.log(`Skipping hydrate reduce because ${service.name} received no items`)
   }
   return state
 }
