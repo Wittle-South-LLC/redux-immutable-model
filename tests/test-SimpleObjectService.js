@@ -140,6 +140,9 @@ describe('SimpleObjectService code coverage tests', () => {
     const reduceRead = config.getSimpleReducer(defaultVerbs.READ)
     chai.expect(() => reduceRead(testService.getState(), testService, {status: 'Junk', verb: defaultVerbs.READ, rimObj: testObj})).to.throw(Error)
   })
+  it('returns undefined when not creating', () => {
+    chai.expect(testService.getCreating()).to.be.undefined
+  })
   it('reduceHydrate clears fetching if result is error', () => {
     const reduceHydrate = config.getSimpleReducer(defaultVerbs.HYDRATE)
     testService.setById(testObj.setFetching(true))
@@ -209,6 +212,7 @@ describe('SimpleObjectService: Direct reducer tests', () => {
     const reduceCreateNew = config.getSimpleReducer(defaultVerbs.CREATE_NEW)
     const cnEvent = testService.createNew()
     reduceCreateNew(testService.getState(), testService, cnEvent)
+    chai.expect(testService.getCreating()).to.equal(testService.getEditing())
     chai.expect(testService.getEditing().getId()).to.equal(SimpleRIMObject._NewID)
   })
   it('reduceCancelNew() updates state correctly', () => {

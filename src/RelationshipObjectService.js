@@ -31,13 +31,11 @@ export default class RelationshipObjectService extends BaseRIMService {
       : this._state.getIn([RIGHT_OBJECT_MAP, id1, id2])
   }
 
-/*
   getCreating () {
     return this._state.getIn([LEFT_OBJECT_MAP,
                               this._objectClass._NewLeftID,
                               this._objectClass._NewRightID])
   }
-*/
 
   getInitialState () {
     const result = super.getInitialState()

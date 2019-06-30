@@ -165,6 +165,9 @@ describe('RelationshipObjectService code coverage tests', () => {
     const reduceRead = config.getRelationshipReducer(defaultVerbs.READ)
     chai.expect(() => reduceRead(testService.getState(), testService, {status: 'Junk', verb: defaultVerbs.READ, rimObj: testObj})).to.throw(Error)
   })
+  it('returns undefined when not creating', () => {
+    chai.expect(testService.getCreating()).to.be.undefined
+  })
   it('reduceHydrate clears fetching if result is error', () => {
     const reduceHydrate = config.getRelationshipReducer(defaultVerbs.HYDRATE)
     testService.setById(testObj.setFetching(true))
@@ -208,6 +211,7 @@ describe('RelationshipObjectService: Direct reducer tests', () => {
     const reduceCreateNew = config.getRelationshipReducer(defaultVerbs.CREATE_NEW)
     const cnEvent = testService.createNew()
     reduceCreateNew(testService.getState(), testService, cnEvent)
+    chai.expect(testService.getCreating()).to.equal(testService.getEditing())
     chai.expect(testService.getEditing().getId()).to.equal(RelationshipRIMObject._NewLeftID + '/' + RelationshipRIMObject._NewRightID)
   })
   it('reduceCancelNew() updates state correctly', () => {
