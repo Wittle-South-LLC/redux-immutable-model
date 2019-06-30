@@ -121,7 +121,13 @@ function getResponseJSON (httpVerb, response) {
 
 /* Redux action for all fetch starts */
 function fetchStart (payload) {
-  return { type: actionTypes.ASYNC, status: status.START, verb: payload.verb, rimObj: payload.rimObj }
+  return {
+    type: actionTypes.ASYNC,
+    status: status.START,
+    verb: payload.verb,
+    serviceName: payload.serviceName,
+    rimObj: payload.rimObj
+  }
 }
 
 /* Redux action for all fetch errors */
@@ -132,6 +138,7 @@ function fetchError (payload, errorMessage) {
     verb: payload.verb,
     rimObj: payload.rimObj,
     nextPath: payload.nextPath,
+    serviceName: payload.serviceName,
     errorMessage
   }
 }
@@ -144,6 +151,7 @@ function fetchSuccess (payload, receivedData) {
     verb: payload.verb,
     rimObj: payload.rimObj,
     nextPath: payload.nextPath,
+    serviceName: payload.serviceName,
     receivedData
   }
 }
