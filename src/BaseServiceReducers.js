@@ -22,8 +22,8 @@ const reduceCreateNew = (state, service, action) => {
   const objClass = service.getObjectClass()
   // If class has static initializer for new objects, use it
   let newObj = objClass.afterNewSuccess
-    ? objClass.afterNewSuccess(new objClass({}, false, false, true), action)
-    : new objClass({}, false, false, true)
+    ? objClass.afterNewSuccess(new objClass(undefined, false, false, true), action)
+    : new objClass(undefined, false, false, true)
   return service.setEditing(newObj)
 }
 
