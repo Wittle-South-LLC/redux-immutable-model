@@ -29,7 +29,7 @@ export default function callAPI (service, verb, method, rimObj, nextPath = undef
   return (dispatch) => {
     // We're only going to do a fetch if there isn't one in flight
     /* istanbul ignore else - Code is unreachable by design */
-    if (!service.isFetching(rimObj)) {
+    if (!rimObj || !service.isFetching(rimObj)) {
       let payload = {
         apiUrl: service.config.getFetchURL() + service.getApiPath(verb, rimObj),
         method,
