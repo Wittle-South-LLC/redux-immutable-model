@@ -104,12 +104,14 @@ const reduceToggleSelected = (state, service, action) => {
 // action.rimObj
 export const sharedStartHandler = (service, action) => {
   /* istanbul ignore next */
+/*
   if (process.env.NODE_ENV !== 'production') {
     if (!action.rimObj) { throw Error('sharedStart: No rimObj in action') }
     if (!service.getById(action.rimObj.getId())) { throw Error('sharedStart: rimObj not in service') }
   }
+*/
   service.clearError()
-  return service.setById(action.rimObj.setFetching(true))
+  return action.rimObj ? service.setById(action.rimObj.setFetching(true)) : service.getState()
 }
 
 // This implementation of error reducing is shared across many verbs
@@ -118,6 +120,7 @@ export const sharedStartHandler = (service, action) => {
 export const sharedErrorHandler = (service, action) => {
   console.log('redux-immutable-model.sharedErrorHandler: action is ', action)
   /* istanbul ignore next */
+/*
   if (process.env.NODE_ENV !== 'production') {
     if (!action.rimObj) {
       throw Error(`sharedError for ${action.verb}: No rimObj in action`) }
@@ -125,8 +128,9 @@ export const sharedErrorHandler = (service, action) => {
       throw Error(`sharedError for ${action.verb}: rimObj with id ${action.rimObj.getId()} not in service`) 
     }
   }
+*/
   service.setError(action.errorMessage)
-  return service.setById(action.rimObj.setFetching(false))
+  return action.rimObj ? service.setById(action.rimObj.setFetching(false)) : service.getState()
 }
 
 // We should not see reducers called with action verbs and invalid
