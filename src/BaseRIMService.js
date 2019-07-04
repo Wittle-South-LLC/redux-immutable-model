@@ -23,14 +23,14 @@ export default class BaseRIMService {
   constructor(rimClass, config) {
     this._state = this.getInitialState()
     this._objectClass = rimClass
-    this._defaultCollectionPath = rimClass.name + 's'
-    this.name = rimClass.name + 'Service'
-    this._defaultApiPath = rimClass.name.toLowerCase() + 's'
+    this._defaultCollectionPath = rimClass.className + 's'
+    this.name = rimClass.className + 'Service'
+    this._defaultApiPath = rimClass.className.toLowerCase() + 's'
     if (rimClass._apiPrefix) {
       this._defaultApiPath = rimClass._apiPrefix + '/' + this.defaultApiPath
     }
     this._apiPrefix = rimClass._apiPrefix
-    this._defaultStatePath = rimClass.name + 's'
+    this._defaultStatePath = rimClass.className + 's'
     this.reducer = this.reducer.bind(this)
     this.config = config
   }

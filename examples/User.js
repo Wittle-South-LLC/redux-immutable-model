@@ -6,6 +6,7 @@ import defaultVerbs from '../src/ReduxVerbs'
 // assume password is only provided to the server during user creation,
 // and user preferences (AppData) are provided only on update
 export default class User extends SimpleRIMObject {
+  static className = 'User'
   // Overriding key static elements from BaseRIMObject
   static _IdentityKey = 'user_id'
 

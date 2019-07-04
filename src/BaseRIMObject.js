@@ -11,6 +11,7 @@ export default class BaseRIMObject extends ImmutableInherit {
 
   // These should be populated by subclasses
   // Default keys int
+  static className = 'BaseRIMObject'
   static _CreatedKey = "record_created"
   static _UpdatedKey = "record_updated"
 

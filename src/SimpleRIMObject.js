@@ -4,6 +4,7 @@ import BaseRIMObject from './BaseRIMObject'
 export default class SimpleRIMObject extends BaseRIMObject {
 
   // Most likely overridden by subclasses
+  static className = 'SimpleRIMObject'
   static _IdentityKey = "ID"
   static _NewID = 'newRIMObject'
 
