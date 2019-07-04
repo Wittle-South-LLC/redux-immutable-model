@@ -43,7 +43,7 @@ export default class BaseRIMService {
   cancelDelete () {
     const rimObj = this.getDeleting()
     if (!rimObj) {
-      console.log(`ERROR: unable to find delete objet for BaseRIMService object class ${this._objectClass.name}`)
+      console.log(`ERROR: unable to find delete objet for BaseRIMService object class ${this._objectClass.className}`)
     }
     return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_DELETE, serviceName: this.name, rimObj }
   }
@@ -51,7 +51,7 @@ export default class BaseRIMService {
   cancelEdit () {
     const rimObj = this.getEditing()
     if (!rimObj) {
-      console.log(`ERROR: unable to find edit object for BaseRIMService object class ${this._objectClass.name}`)
+      console.log(`ERROR: unable to find edit object for BaseRIMService object class ${this._objectClass.className}`)
     }
     return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_EDIT, serviceName: this.name, rimObj }
   }
@@ -91,7 +91,7 @@ export default class BaseRIMService {
   }
 
   getApiCollectionPath () {
-    return this.config.getCollectionApiPath(this._objectClass.name)
+    return this.config.getCollectionApiPath(this._objectClass.className)
   }
 
   getApiPath (verb, obj) {
@@ -177,7 +177,7 @@ export default class BaseRIMService {
   isFetching (obj) {
     if (obj.isFetching) { return obj.isFetching() }
     else /* istanbul ignore next */ if (process.env.NODE_ENV !== 'production') {
-      throw new Error(`BaseRIMService: ${this._objectClass.name} isFetching(): invalid argument: `, obj)
+      throw new Error(`BaseRIMService: ${this._objectClass.className} isFetching(): invalid argument: `, obj)
     }
   }
 
