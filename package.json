@@ -85,6 +85,6 @@
     "instrument": false
   },
   "publishConfig": {
-    "registry": "http://npm.wittlesouth.local"
+    "registry": "https://npm.wittlesouth.com"
   }
 }
