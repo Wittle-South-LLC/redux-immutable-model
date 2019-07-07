@@ -7,7 +7,9 @@ pipeline {
         NODE_ENV = 'test'
       }
       steps {
+        sh "npm config set cache ${env.WORKSPACE}"
         sh "npm install"
+        sh "npm build"
         sh "npm test"
       }
     }
@@ -17,6 +19,9 @@ pipeline {
       mail to: 'eric@wittlesouth.com',
       subject: "WS Failed Pipeline: ${currentBuild.fullDisplayName}",
       body: "Build failed: ${env.BUILD_URL}"
+    }
+    always {
+      deleteDir()
     }
   }
 }
