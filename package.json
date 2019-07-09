@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "babel src --out-dir dist",
-    "test": "NODE_ENV=test mocha --require @babel/register -- tests",
-    "cover": "NODE_ENV=test nyc _mocha --require @babel/register -- tests"
+    "test": "NODE_ENV=test mocha --require @babel/register tests",
+    "cover": "NODE_ENV=test nyc --reporter=html --reporter=text mocha tests"
   },
   "repository": {
     "type": "git",
@@ -25,24 +25,23 @@
   },
   "homepage": "https://github.com/Wittle-South-LLC/redux-immutable-model#readme",
   "dependencies": {
-    "immutable-inherit": "^0.2.1",
+    "immutable-inherit": "^0.2.3",
     "isomorphic-fetch": "^2.2.1"
   },
   "peerDependencies": {
     "immutable": "^4.0.0-rc.12"
   },
   "devDependencies": {
-    "@babel/cli": "^7.2.3",
-    "@babel/core": "^7.2.2",
-    "@babel/node": "^7.2.2",
-    "@babel/plugin-proposal-class-properties": "^7.2.3",
-    "@babel/preset-env": "^7.2.3",
-    "babel-plugin-istanbul": "^5.1.0",
+    "@babel/cli": "^7.5.0",
+    "@babel/core": "^7.5.0",
+    "@babel/node": "^7.5.0",
+    "@babel/plugin-proposal-class-properties": "^7.5.0",
+    "@babel/preset-env": "^7.5.0",
+    "babel-plugin-istanbul": "^5.1.4",
     "chai": "^4.2.0",
     "deep-diff": "^1.0.2",
-    "istanbul": "^0.4.5",
-    "mocha": "^5.2.0",
-    "nock": "^10.0.5",
+    "mocha": "^6.1.4",
+    "nock": "^10.0.6",
     "nyc": "^14.1.0",
     "redux": "^4.0.1",
     "redux-immutable": "^4.0.0",

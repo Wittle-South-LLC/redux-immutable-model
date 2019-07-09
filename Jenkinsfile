@@ -8,7 +8,7 @@ pipeline {
       }
       steps {
         sh "npm config set cache ${env.WORKSPACE}"
-        sh "npm install"
+        sh "npm ci"
         sh "npm build"
         sh "npm test"
       }
