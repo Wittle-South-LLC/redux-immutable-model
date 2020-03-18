@@ -86,7 +86,8 @@ const reduceSaveUpdate = (state, service, action) => {
                                     service.updateSearchObject(newState.getIn([service.constructor._SearchResults, editIndex]), action.rimObj))
           }
         }
-        return newState
+        return service.setState(newState.set(service.constructor._RevertTo, undefined))
+
     /* istanbul ignore next */
     default: return sharedDefaultHandler(state, action)
   }

@@ -75,6 +75,7 @@ version for tests to run successfully. Example:
 Changelog
 ---------
 
+* 0.6.2 - Allows a route to be passed in startEdit
 * 0.6.0 - Breaking change introducing relationship objects, and refactoring support for
   simple object. Standardizes Get/Set methods, also adds tracking a selected set. Any code
   based on prior versions will require changes.

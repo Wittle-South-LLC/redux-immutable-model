@@ -27,7 +27,7 @@ export default class BaseRIMService {
     this.name = rimClass.className + 'Service'
     this._defaultApiPath = rimClass.className.toLowerCase() + 's'
     if (rimClass._apiPrefix) {
-      this._defaultApiPath = rimClass._apiPrefix + '/' + this.defaultApiPath
+      this._defaultApiPath = rimClass._apiPrefix + '/' + this._defaultApiPath
     }
     this._apiPrefix = rimClass._apiPrefix
     this._defaultStatePath = rimClass.className + 's'
@@ -40,24 +40,24 @@ export default class BaseRIMService {
     return state
   }
 
-  cancelDelete () {
+  cancelDelete (nextPath = undefined) {
     const rimObj = this.getDeleting()
     if (!rimObj) {
       console.log(`ERROR: unable to find delete objet for BaseRIMService object class ${this._objectClass.className}`)
     }
-    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_DELETE, serviceName: this.name, rimObj }
+    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_DELETE, serviceName: this.name, rimObj, nextPath }
   }
 
-  cancelEdit () {
+  cancelEdit (nextPath = undefined) {
     const rimObj = this.getEditing()
     if (!rimObj) {
       console.log(`ERROR: unable to find edit object for BaseRIMService object class ${this._objectClass.className}`)
     }
-    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_EDIT, serviceName: this.name, rimObj }
+    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_EDIT, serviceName: this.name, rimObj, nextPath }
   }
 
-  cancelNew (rimObj) {
-    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_NEW, serviceName: this.name, rimObj }
+  cancelNew (rimObj, nextPath = undefined) {
+    return { type: actionTypes.SYNC, verb: this.config.verbs.CANCEL_NEW, serviceName: this.name, rimObj, nextPath }
   }
 
   clearError() {
@@ -280,8 +280,8 @@ export default class BaseRIMService {
     return { type: actionTypes.SYNC, verb: this.config.verbs.START_DELETE, serviceName: this.name, rimObj }
   }
 
-  startEdit (rimObj) {
-    return { type: actionTypes.SYNC, verb: this.config.verbs.START_EDIT, serviceName: this.name, rimObj }
+  startEdit (rimObj, nextPath = undefined) {
+    return { type: actionTypes.SYNC, verb: this.config.verbs.START_EDIT, serviceName: this.name, rimObj, nextPath }
   }
 
   toggleSelected (rimObj) {
